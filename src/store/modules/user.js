@@ -1,5 +1,6 @@
 import { login, logout, getInfo } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
+import da from "element-ui/src/locale/lang/da";
 
 const user = {
   state: {
