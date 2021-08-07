@@ -264,7 +264,6 @@ export default {
       return scope.$index >= this.count - 1;
     },
     handleClose(done) {
-      this.$message.success("成功关闭抽屉")
       done();
     },
     handleInputChange(row) {
