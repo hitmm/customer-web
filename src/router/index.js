@@ -36,21 +36,49 @@ export const constantRouterMap = [
 
 export const asyncRouterMap = [
   {
-    path: '/company',
+    path: '/income',
     component: Layout,
-    redirect: '/company/page',
-    name: 'company',
-    meta: {title: '客户公司管理', icon: 'product'},
+    redirect: '/income/page',
+    name: 'income',
+    meta: {title: '收入管理', icon: 'product'},
     children: [{
       path: 'page',
       name: 'page',
-      component: () => import('@/views/company/index'),
-      meta: {title: '公司列表', icon: 'product-list'}
+      component: () => import('@/views/income/index'),
+      meta: {title: '收入详情', icon: 'product-list'}
     },{
-      path: 'customer',
-      name: 'customer',
-      component: () => import('@/views/company/customer/index'),
-      meta: {title: '客户列表', icon: 'product-comment'}
+      path: 'company',
+      name: 'company',
+      component: () => import('@/views/income/company/index'),
+      meta: {title: '客户公司管理', icon: 'product-list'}
+    },{
+      path: 'erdao',
+      name: 'erdao',
+      component: () => import('@/views/income/erdao/index'),
+      meta: {title: '二道收入管理', icon: 'product-comment'}
+    }]
+  },
+  {
+    path: '/spending',
+    component: Layout,
+    redirect: '/spending/page',
+    name: 'spending',
+    meta: {title: '支出管理', icon: 'sms-coupon'},
+    children: [{
+      path: 'page',
+      name: 'page',
+      component: () => import('@/views/spending/index'),
+      meta: {title: '支出详情', icon: 'product-list'}
+    },{
+      path: 'erdao',
+      name: 'erdao',
+      component: () => import('@/views/spending/erdao/index'),
+      meta: {title: '二道支出列表', icon: 'product-comment'}
+    },{
+      path: 'chetou',
+      name: 'chetou',
+      component: () => import('@/views/spending/chetou/index'),
+      meta: {title: '车头支出列表', icon: 'order'}
     }]
   },
   {

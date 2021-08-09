@@ -46,6 +46,7 @@
                   :data="companyList"
                   style="width: 100%"
                   height="tableHeight"
+                  :infinite-scroll-disabled="comBusy"
                   :row-class-name="tableRowClassName"
                   v-el-table-infinite-scroll="companyLoad"
                   v-loading="comListLoading"
@@ -204,7 +205,7 @@ import {createId} from "@/api/primaryutils";
 import EditableCell from "@/components/Table/EditableCell.vue";
 import elTableInfiniteScroll from 'el-table-infinite-scroll';
 import img_home_today_amount from '@/assets/images/home_today_amount.png';
-import {upsert} from "../../api/company";
+import {upsert} from "../../../api/company";
 
 const defaultComListQuery = {
   name: null,
@@ -254,6 +255,7 @@ export default {
   data() {
     return {
       tableHeight: "100px",
+      comBusy: false,
       operateType: null,
       comListQuery: Object.assign({}, defaultComListQuery),
       cstListQuery: Object.assign({}, defaultInComeListQuery),
@@ -372,10 +374,12 @@ export default {
     },
     companyLoad() {
       this.comListLoading = true;
+      this.comBusy = true;
       fetchList(this.comListQuery).then(response => {
         this.comListLoading = false;
         console.log(this.companyList)
         let list1 = response.data.data;
+        this.comTotal = response.data.total;
         console.log(list1)
         if (list1 == null || list1.length <= 0) {
           this.$message.success('您要的太多，而我已经没有了');
@@ -389,8 +393,8 @@ export default {
           console.log(this.companyList)
         }
         this.comListQuery.pageNum = this.comListQuery.pageNum + 1;
-        this.comTotal = response.data.total;
       });
+      this.comBusy =false;
     },
     customerLoad() {
       this.cstListLoading = true;
@@ -422,12 +426,27 @@ export default {
     },
     handleSearchList() {
       this.comListQuery.pageNum = 1;
-      new Promise(()=>{
-        this.companyLoad()
-      }).then(()=>{
-        this.comCount = this.comTotal
+      this.comListLoading = true;
+      fetchList(this.comListQuery).then(response => {
+        this.comListLoading = false;
         console.log(this.companyList)
-      })
+        let list1 = response.data.data;
+        this.comTotal = response.data.total;
+        this.comCount = this.comTotal
+        console.log(list1)
+        if (list1 == null || list1.length <= 0) {
+          this.$message.success('您要的太多，而我已经没有了');
+        }
+        console.log(this.companyList)
+        if (this.comListQuery.pageNum === 1) {
+          this.companyList = list1;
+          console.log(this.companyList)
+        } else {
+          this.companyList = this.companyList.concat(list1);
+          console.log(this.companyList)
+        }
+        this.comListQuery.pageNum = this.comListQuery.pageNum + 1;
+      });
     },
     handleAddCom() {
       //新增一条表记录，获取一个id
