@@ -1,44 +1,8 @@
 <template> 
   <div class="app-container">
-    <el-card class="filter-container" shadow="never">
-      <div>
-        <i class="el-icon-search"></i>
-        <span>筛选搜索</span>
-        <el-button
-          style="float: right"
-          @click="handleSearchList()"
-          type="primary"
-          size="small">
-          查询结果
-        </el-button>
-        <el-button
-          style="float: right;margin-right: 15px"
-          @click="handleResetSearch()"
-          size="small">
-          重置
-        </el-button>
-      </div>
-      <div style="margin-top: 15px">
-        <el-form :inline="true" :model="comListQuery" size="small" label-width="140px">
-          <el-form-item label="公司名称：">
-            <el-input style="width: 203px" v-model="comListQuery.name" placeholder="客户公司名称"></el-input>
-          </el-form-item>
-          <el-form-item label="客户名称：">
-            <el-input style="width: 203px" v-model="comListQuery.cstName" placeholder="客户名称"></el-input>
-          </el-form-item>
-        </el-form>
-      </div>
-    </el-card>
     <el-card class="operate-container" shadow="never">
       <i class="el-icon-tickets"></i>
-      <span>客户公司列表</span>
-      <el-button
-        style="float: right;margin-right: 15px"
-        @click="handleAddCom()"
-        type="primary"
-        size="small">
-        添加
-      </el-button>
+      <span>今日收入详情</span>
     </el-card>
     <div class="table-container">
       <el-main>
