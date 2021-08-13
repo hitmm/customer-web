@@ -6,9 +6,18 @@ export function fetchList(params) {
     params:params
   })
 }
+
 export function fetchCstList(params) {
   return request({
     url:'/cstIncome/list',
+    method:'get',
+    params:params
+  })
+}
+
+export function getTodayMoney(params) {
+  return request({
+    url:'/company/list',
     method:'get',
     params:params
   })

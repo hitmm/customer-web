@@ -15,8 +15,8 @@
     <component :is="editableComponent"
                v-if="editMode || showInput"
                ref="input"
-               type="textarea"
-               autosize
+               type="text"
+               style="text-align: center"
                @focus="onFieldClick"
                @keydown.enter.native="onInputExit($event)"
                @blur="onInputExit($event)"
@@ -109,6 +109,7 @@ export default {
 <style>
 .cell-content {
   min-height: 100%;
+  text-align: center;
   border: 1px solid transparent;
 }
 .edit-enabled-cell {
@@ -116,5 +117,7 @@ export default {
 }
 .edit-cell{
   height: 50px;
+  padding: 10px 0;
+  text-align: center;
 }
 </style>
