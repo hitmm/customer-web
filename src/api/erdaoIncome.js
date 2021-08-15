@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 export function fetchList(params) {
   return request({
-    url:'/company/list',
+    url:'/erdaoManage/list',
     method:'get',
     params:params
   })
@@ -9,15 +9,7 @@ export function fetchList(params) {
 
 export function fetchCstList(params) {
   return request({
-    url:'/customer/list',
-    method:'get',
-    params:params
-  })
-}
-
-export function getTodayMoney(params) {
-  return request({
-    url:'/company/list',
+    url:'/erdaoIncome/list',
     method:'get',
     params:params
   })
@@ -27,7 +19,7 @@ export function doDelete(id) {
   let params = new URLSearchParams();
   params.append('id', id);
   return request({
-    url:'/company/delete',
+    url:'/erdaoManage/delete',
     method:'post',
     params:params
   })
@@ -37,7 +29,7 @@ export function doDeleteCstIncome(id) {
   let params = new URLSearchParams();
   params.append('id', id);
   return request({
-    url:'/customer/delete',
+    url:'/erdaoIncome/delete',
     method:'post',
     params:params
   })
@@ -46,7 +38,7 @@ export function doDeleteCstIncome(id) {
 
 export function upsertCstIncome(data) {
   return request({
-    url:'/customer/upsert',
+    url:'/erdaoIncome/upsert',
     method:'post',
     data:data
   })
@@ -54,7 +46,7 @@ export function upsertCstIncome(data) {
 
 export function upsert(data) {
   return request({
-    url:'/company/upsert',
+    url:'/erdaoManage/upsert',
     method:'post',
     data:data
   })

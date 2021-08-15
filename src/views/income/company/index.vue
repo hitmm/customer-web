@@ -1,4 +1,4 @@
-<template> 
+<template>
   <div class="app-container">
     <el-card class="filter-container" shadow="never">
       <div>
@@ -44,8 +44,8 @@
         <el-table ref="companyTable"
                   :data="companyList"
                   style="width: 100%"
-                  :row-style="{height:'10px'}"
-                  :cell-style="{padding:'5px 0'}"
+                  :row-style="{height: '0'}"
+                  :cell-style="{padding: '0'}"
                   @expand-change="expandChange"
                   v-el-table-infinite-scroll="companyLoad"
                   :infinite-scroll-disabled="comBusy"
@@ -58,25 +58,26 @@
                 <el-table ref="cstTable"
                           :key="timerstamp"
                           :data="scope.row.child"
-                          style="width: 100%;height: auto;padding: 0;margin: 0"
+                          :row-style="{height: '0'}"
+                          :cell-style="{padding: '0'}"
+                          style="width: 100%;padding: 0;margin: 0"
                           v-el-table-infinite-scroll="customerLoad(scope.row)"
                           :infinite-scroll-disabled="scope.row.cstBusy"
                           v-loading="scope.row.cstListLoading"
                           :row-class-name="cstRowClassName"
-                          :row-style="{height:'8px'}"
                           border>
                   <el-table-column label="详情-客户名称" style="width: 50%" align="center">
                     <editable-cell slot-scope="{row}"
                                    :can-edit="true"
                                    v-on:blur="handleCstInputChange(scope.row,row)"
-                                   v-model="row.cstName">
-                      <span slot="content">{{ row.cstName }}</span>
+                                   v-model="row.name">
+                      <span slot="content">{{ row.name }}</span>
                     </editable-cell>
                   </el-table-column>
                   <el-table-column label="详情-收入(人民币)" style="width: 30%" align="center">
                     <editable-cell slot-scope="{row}"
                                    :can-edit="true"
-                                   v-on:change="handleCstInputChange(row)"
+                                   v-on:change="handleCstInputChange(scope.row,row)"
                                    v-model="row.money">
                       <span slot="content">{{ row.money }}</span>
                     </editable-cell>
@@ -118,32 +119,32 @@
             <editable-cell slot-scope="{row}"
                            :can-edit="true"
                            v-on:blur="handleInputChange(row)"
-                           v-model="row.backPoint">
-              <span slot="content">{{ row.backPoint }}</span>
+                           v-model="row.profitPoint">
+              <span slot="content">{{ row.profitPoint }}</span>
             </editable-cell>
           </el-table-column>
           <el-table-column label="赔付" align="center">
             <editable-cell slot-scope="{row}"
                            :can-edit="true"
                            v-on:blur="handleInputChange(row)"
-                           v-model="row.backPoint">
-              <span slot="content">{{ row.backPoint }}</span>
+                           v-model="row.lossPay">
+              <span slot="content">{{ row.lossPay }}</span>
             </editable-cell>
           </el-table-column>
           <el-table-column label="没人领" align="center">
             <editable-cell slot-scope="{row}"
                            :can-edit="true"
                            v-on:blur="handleInputChange(row)"
-                           v-model="row.backPoint">
-              <span slot="content">{{ row.backPoint }}</span>
+                           v-model="row.unclaimed">
+              <span slot="content">{{ row.unclaimed }}</span>
             </editable-cell>
           </el-table-column>
           <el-table-column label="踩" align="center">
             <editable-cell slot-scope="{row}"
                            :can-edit="true"
                            v-on:blur="handleInputChange(row)"
-                           v-model="row.backPoint">
-              <span slot="content">{{ row.backPoint }}</span>
+                           v-model="row.stamp">
+              <span slot="content">{{ row.stamp }}</span>
             </editable-cell>
           </el-table-column>
           <el-table-column label="客户数量" align="center">
@@ -195,7 +196,7 @@ const defaultComListQuery = {
 const defaultComRow = {
   id: null,
   name: "",
-  backPoint: 0,
+  profitPoint: 0,
   yesterdayMoney: 0,
   monthMoney: 0
 }
@@ -203,11 +204,12 @@ const defaultComRow = {
 
 const defaultIncomeRow = {
   id: null,
+  comId: null,
   name: "",
   money: 0
 }
 
-const defaultInComeListQuery = {
+const defaultCustomerListQuery = {
   companyId: null,
   date: null,
   pageNum: 1,
@@ -237,7 +239,6 @@ export default {
       cstBusy: false,
       operateType: null,
       comListQuery: Object.assign({}, defaultComListQuery),
-      cstListQuery: Object.assign({}, defaultInComeListQuery),
       newComRow: Object.assign({}, defaultComRow),
       newIncomeRow: Object.assign({}, defaultIncomeRow),
       companyList: null,
@@ -268,11 +269,12 @@ export default {
   },
   methods: {
     expandChange(row) {
-      row.listQuery = Object.assign({}, defaultInComeListQuery)
+      row.listQuery = Object.assign({}, defaultCustomerListQuery)
+      console.log(row.listQuery)
       row.cstFinished = false;
       row.cstBusy = false;
       row.cstCount = 0;
-      console.log(row)
+      row.child = [];
     },
     timerLoading() {
       if (this.currComRow == null) {
@@ -290,8 +292,6 @@ export default {
       });
     },
     changeDate() {
-      this.drawerFirstLoad = true;
-      console.log("日期改变")
       this.customerLoad();
     },
     customerReset() {
@@ -299,7 +299,7 @@ export default {
       this.cstTotal = null;
       this.drawerFirstLoad = true;
       this.currComRow = null;
-      this.cstListQuery = Object.assign({}, defaultInComeListQuery);
+      this.cstListQuery = Object.assign({}, defaultCustomerListQuery);
     },
     dateFormat(time) {
       let date = new Date(time);
@@ -333,7 +333,6 @@ export default {
           return false;
         }
       }
-      console.log(scope.row,itemScope.$index)
       if (scope.row.cstCount == null) {
         scope.row.cstCount = scope.row.cstTotal;
         return true;
@@ -341,7 +340,6 @@ export default {
       return itemScope.$index >= scope.row.cstCount - 1;
     },
     showComAdd(scope) {
-      console.log("show:" + this.comCount + "-" + scope.$index)
       if (this.comCount == null) {
         this.comCount = this.comTotal;
         return true;
@@ -349,24 +347,19 @@ export default {
       return scope.$index >= this.comCount - 1;
     },
     handleInputChange(row) {
-      console.log(row)
       let com = Object.assign({}, this.newComRow);
       com.id = row.id
       com.name = row.name
-      com.backPoint = row.backPoint
-      upsert(com).then(response => {
+      com.profitPoint = row.profitPoint
+      upsert(row).then(response => {
         if (response.data > 0) {
           this.$message.success('更新成功');
         }
       })
     },
     handleCstInputChange(prow,row) {
-      let com = Object.assign({}, this.newIncomeRow);
-      com.id = row.id
-      com.cstName = row.cstName
-      com.money = row.money
-      com.comId = prow.id;
-      upsertCstIncome(com).then(response => {
+      row.comId = prow.id;
+      upsertCstIncome(row).then(response => {
         if (response.data > 0) {
           this.$message.success('更新成功');
         }
@@ -385,29 +378,22 @@ export default {
       this.comBusy = true;
       fetchList(this.comListQuery).then(response => {
         this.comListLoading = false;
-        console.log(this.companyList)
         let list1 = response.data.data;
         this.comTotal = response.data.total;
-        console.log(list1)
         if (list1 == null || list1.length <= 0) {
           this.$message.success('您要的太多，而我已经没有了');
         }
-        list1.forEach(x=>{
-          x.cstListLoading = false;
-        })
-        console.log(this.companyList)
         if (this.comListQuery.pageNum === 1) {
           this.companyList = list1;
-          console.log(this.companyList)
         } else {
           this.companyList = this.companyList.concat(list1);
-          console.log(this.companyList)
         }
         this.comListQuery.pageNum = this.comListQuery.pageNum + 1;
       });
       this.comBusy = false;
     },
     customerLoad(row) {
+      console.log(row.listQuery)
       if (row.cstFinished) {
         row.cstListLoading = false;
         return;
@@ -418,48 +404,29 @@ export default {
       row.cstBusy = true;
       fetchCstList(row.listQuery).then(response => {
         row.cstListLoading = false;
-        let list1 = response.data;
+        let list1 = response.data.data;
+        row.cstTotal = response.data.total;
         if (list1 == null || list1.length <= 0) {
           this.$message.success('您要的太多，而我已经没有了');
           row.cstFinished = true;
+        } else {
+          row.listQuery.pageNum = row.listQuery.pageNum + 1;
         }
         if (row.listQuery.pageNum === 1) {
           row.child = list1;
         } else {
           row.child = row.child.concat(list1);
         }
-        if(row.child != null){
-          row.cstTotal = row.child.length;
-        }
-        row.listQuery.pageNum = row.listQuery.pageNum + 1;
         row.cstBusy = false;
         row.cstListLoading = false;
         this.timerstamp = new Date().valueOf();
         row.cstCount = row.cstTotal;
-        console.log(row)
+        console.log(row.listQuery)
       });
     },
     handleSearchList() {
       this.comListQuery.pageNum = 1;
-      this.comListLoading = true;
-      fetchList(this.comListQuery).then(response => {
-        this.comListLoading = false;
-        let list1 = response.data.data;
-        this.comTotal = response.data.total;
-        this.comCount = this.comTotal
-        if (list1 == null || list1.length <= 0) {
-          this.$message.success('您要的太多，而我已经没有了');
-        }
-        console.log(this.companyList)
-        if (this.comListQuery.pageNum === 1) {
-          this.companyList = list1;
-          console.log(this.companyList)
-        } else {
-          this.companyList = this.companyList.concat(list1);
-          console.log(this.companyList)
-        }
-        this.comListQuery.pageNum = this.comListQuery.pageNum + 1;
-      });
+      this.companyLoad();
     },
     handleAddCom() {
       //新增一条表记录，获取一个id
@@ -480,6 +447,7 @@ export default {
         let newRow = {};
         Object.assign(newRow, this.newIncomeRow);
         newRow.id = id;
+        newRow.comId = row.id;
         row.child.push(newRow);
         row.cstCount++;
       })
@@ -488,6 +456,7 @@ export default {
     handleResetSearch() {
       this.selectProductCateValue = [];
       this.comListQuery = Object.assign({}, defaultComListQuery);
+      this.handleSearchList();
     },
     handleDeleteCom(row) {
       this.$confirm('是否要进行删除操作?', '提示', {

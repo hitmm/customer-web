@@ -19,22 +19,19 @@
         </el-button>
       </div>
       <div style="margin-top: 15px">
-        <el-form :inline="true" :model="manageListQuery" size="small" label-width="140px">
-          <el-form-item label="二道名称：">
-            <el-input style="width: 203px" v-model="manageListQuery.name" placeholder="二道名称"></el-input>
-          </el-form-item>
-          <el-form-item label="子项名称：">
-            <el-input style="width: 203px" v-model="manageListQuery.itemName" placeholder="子项名称"></el-input>
+        <el-form :inline="true" :model="topListQuery" size="small" label-width="140px">
+          <el-form-item label="司机名称：">
+            <el-input style="width: 203px" v-model="topListQuery.name" placeholder="司机名称"></el-input>
           </el-form-item>
         </el-form>
       </div>
     </el-card>
     <el-card class="operate-container" shadow="never">
       <i class="el-icon-tickets"></i>
-      <span>二道收入列表</span>
+      <span>二道支出列表(货币以<a style="color: red">人民币</a>为单位)</span>
       <el-button
         style="float: right;margin-right: 15px"
-        @click="handleAddManage()"
+        @click="handleAddDriver()"
         type="primary"
         size="small">
         添加
@@ -42,14 +39,14 @@
     </el-card>
     <div class="table-container">
         <el-table ref="companyTable"
-                  :data="manageList"
+                  :data="driverList"
                   style="width: 100%"
                   :row-style="{height: '0'}"
                   :cell-style="{padding: '0'}"
                   @expand-change="expandChange"
-                  v-el-table-infinite-scroll="manageLoad"
-                  :infinite-scroll-disabled="manageBusy"
-                  v-loading="manageListLoading"
+                  v-el-table-infinite-scroll="driverLoad"
+                  :infinite-scroll-disabled="driverBusy"
+                  v-loading="driverListLoading"
                   border>
 
           <el-table-column type="expand">
@@ -61,26 +58,38 @@
                           :row-style="{height: '0'}"
                           :cell-style="{padding: '0'}"
                           style="width: 100%;padding: 0;margin: 0"
-                          v-el-table-infinite-scroll="itemLoad(scope.row)"
-                          :infinite-scroll-disabled="scope.row.cstBusy"
-                          v-loading="scope.row.cstListLoading"
+                          v-el-table-infinite-scroll="carryDetailLoad(scope.row)"
+                          :infinite-scroll-disabled="scope.row.itemBusy"
+                          v-loading="scope.row.itemListLoading"
                           :row-class-name="cstRowClassName"
                           border>
-                  <el-table-column label="详情-子项名称" style="width: 50%" align="center">
+                  <el-table-column label="总数" align="center">
                     <editable-cell slot-scope="{row}"
                                    :can-edit="true"
                                    v-on:blur="handleItemInputChange(scope.row,row)"
-                                   v-model="row.name">
-                      <span slot="content">{{ row.name }}</span>
+                                   v-model="row.carryAmount">
+                      <span slot="content">{{ row.carryAmount }}</span>
                     </editable-cell>
                   </el-table-column>
-                  <el-table-column label="详情-收入(人民币)" style="width: 30%" align="center">
+                  <el-table-column label="事故补贴" align="center">
                     <editable-cell slot-scope="{row}"
                                    :can-edit="true"
-                                   v-on:change="handleItemInputChange(scope.row,row)"
-                                   v-model="row.money">
-                      <span slot="content">{{ row.money }}</span>
+                                   v-on:blur="handleItemInputChange(scope.row,row)"
+                                   v-model="row.accidentMoney">
+                      <span slot="content">{{ row.accidentMoney }}</span>
                     </editable-cell>
+                  </el-table-column>
+                  <el-table-column label="应付款" align="center">
+                    <template slot-scope="{row}">{{ row.payableMoney }}</template>
+                  </el-table-column>
+                  <el-table-column label="保底价" align="center">
+                    <template slot-scope="{row}">{{ row.baseMoney }}</template>
+                  </el-table-column>
+                  <el-table-column label="未满百补贴" align="center">
+                    <template slot-scope="{row}">{{ row.overMoney }}</template>
+                  </el-table-column>
+                  <el-table-column label="实际付款" align="center">
+                    <template slot-scope="{row}">{{ row.realMoney }}</template>
                   </el-table-column>
                   <el-table-column label="详情-操作" style="width: 20%" align="center" v-if="canEditIncome()" key='1'>
                     <template slot-scope="itemScope">
@@ -88,7 +97,7 @@
                         <el-button
                           size="mini"
                           type="primary"
-                          v-if="showCstAdd(scope,itemScope)"
+                          v-if="showItemAdd(scope,itemScope)"
                           @click="handleAddItemIncome(scope.row)">新增
                         </el-button>
                         <el-button
@@ -107,7 +116,7 @@
           <el-table-column label="编号" width="100" align="center">
             <template slot-scope="scope">{{ scope.row.id }}</template>
           </el-table-column>
-          <el-table-column label="二道名称" width="120" align="center">
+          <el-table-column label="司机姓名" width="120" align="center">
             <editable-cell slot-scope="{row}"
                            :can-edit="true"
                            v-on:blur="handleInputChange(row)"
@@ -115,7 +124,10 @@
               <span slot="content">{{ row.name }}</span>
             </editable-cell>
           </el-table-column>
-          <el-table-column label="点数" align="center">
+          <el-table-column label="总数" align="center">
+            <template slot-scope="{row}">{{ row.totalAmount }}</template>
+          </el-table-column>
+          <el-table-column label="手续费点数" align="center">
             <editable-cell slot-scope="{row}"
                            :can-edit="true"
                            v-on:blur="handleInputChange(row)"
@@ -123,29 +135,25 @@
               <span slot="content">{{ row.profitPoint }}</span>
             </editable-cell>
           </el-table-column>
-          <el-table-column label="赔付" align="center">
+          <el-table-column label="保底价" align="center">
             <editable-cell slot-scope="{row}"
                            :can-edit="true"
                            v-on:blur="handleInputChange(row)"
-                           v-model="row.lossPay">
-              <span slot="content">{{ row.lossPay }}</span>
+                           v-model="row.baseMoney">
+              <span slot="content">{{ row.baseMoney }}</span>
             </editable-cell>
           </el-table-column>
-          <el-table-column label="没人领" align="center">
-            <editable-cell slot-scope="{row}"
-                           :can-edit="true"
-                           v-on:blur="handleInputChange(row)"
-                           v-model="row.unclaimed">
-              <span slot="content">{{ row.unclaimed }}</span>
-            </editable-cell>
+          <el-table-column label="应付款" align="center">
+            <template slot-scope="{row}">{{ row.payableMoney }}</template>
           </el-table-column>
-          <el-table-column label="踩" align="center">
-            <editable-cell slot-scope="{row}"
-                           :can-edit="true"
-                           v-on:blur="handleInputChange(row)"
-                           v-model="row.stamp">
-              <span slot="content">{{ row.stamp }}</span>
-            </editable-cell>
+          <el-table-column label="未满百补贴" align="center">
+            <template slot-scope="{row}">{{ row.overflowMoney }}</template>
+          </el-table-column>
+          <el-table-column label="事故赔付" align="center">
+            <template slot-scope="{row}">{{ row.accidentMoney }}</template>
+          </el-table-column>
+          <el-table-column label="实际付款" align="center">
+            <template slot-scope="{row}">{{ row.realMoney }}</template>
           </el-table-column>
           <el-table-column label="操作" width="300" align="center">
             <template slot-scope="scope">
@@ -154,7 +162,7 @@
                   size="mini"
                   type="primary"
                   v-if="showComAdd(scope)"
-                  @click="handleAddManage">添加
+                  @click="handleAddDriver">添加
                 </el-button>
                 <el-button
                   size="mini"
@@ -174,7 +182,7 @@
   </div>
 </template>
 <script>
-import {doDelete,upsert, fetchCstList, fetchList, getTodayMoney, upsertCstIncome} from "@/api/erdaoIncome";
+import {doDelete,upsert, fetchCstList, fetchList, getTodayMoney, upsertCstIncome} from "@/api/driver";
 import {createId} from "@/api/primaryutils";
 import EditableCell from "@/components/Table/EditableCell.vue";
 import elTableInfiniteScroll from 'el-table-infinite-scroll';
@@ -182,7 +190,7 @@ import img_home_today_amount from '@/assets/images/home_today_amount.png';
 
 const defaultComListQuery = {
   name: null,
-  itemName: null,
+  cstName: null,
   pageNum: 1,
   pageSize: 5,
 };
@@ -198,13 +206,13 @@ const defaultComRow = {
 
 const defaultIncomeRow = {
   id: null,
-  manageId: null,
+  driverId: null,
   name: "",
   money: 0
 }
 
 const defaultErdaoItemListQuery = {
-  manageId: null,
+  driverId: null,
   date: null,
   pageNum: 1,
   pageSize: 5,
@@ -229,13 +237,13 @@ export default {
   data() {
     return {
       tableHeight: "100px",
-      manageBusy: false,
-      cstBusy: false,
+      driverBusy: false,
+      itemBusy: false,
       operateType: null,
-      manageListQuery: Object.assign({}, defaultComListQuery),
+      topListQuery: Object.assign({}, defaultComListQuery),
       newComRow: Object.assign({}, defaultComRow),
       newIncomeRow: Object.assign({}, defaultIncomeRow),
-      manageList: null,
+      driverList: null,
       cstList: null,
       manageTotal: null,
       currComRow: null,
@@ -250,7 +258,7 @@ export default {
       timerstamp: 0,
       showDrawerClose: false,
       drawerTitle: "默认",
-      manageListLoading: true,
+      driverListLoading: true,
       selectProductCateValue: null,
       moneyTimer: null,
       img_home_today_amount,
@@ -266,7 +274,7 @@ export default {
       row.listQuery = Object.assign({}, defaultErdaoItemListQuery)
       console.log(row.listQuery)
       row.cstFinished = false;
-      row.cstBusy = false;
+      row.itemBusy = false;
       row.cstCount = 0;
       row.child = [];
     },
@@ -286,7 +294,7 @@ export default {
       });
     },
     changeDate() {
-      this.itemLoad();
+      this.carryDetailLoad();
     },
     customerReset() {
       this.cstList = [];
@@ -319,7 +327,7 @@ export default {
       }
       return true;
     },
-    showCstAdd(scope,itemScope) {
+    showItemAdd(scope, itemScope) {
       if (this.date != null) {
         let time = new Date().getTime();
         let str = this.dateFormat(time);
@@ -327,6 +335,7 @@ export default {
           return false;
         }
       }
+      console.log(scope.row.cstCount,itemScope.$index)
       if (scope.row.cstCount == null) {
         scope.row.cstCount = scope.row.cstTotal;
         return true;
@@ -348,12 +357,32 @@ export default {
       })
     },
     handleItemInputChange(prow, row) {
-      row.manageId = prow.id;
+      row.driverId = prow.id;
       upsertCstIncome(row).then(response => {
         if (response.data > 0) {
           this.$message.success('更新成功');
+          this.cal(row)
         }
       })
+    },
+    cal(row) {
+      if(row.carryAmount != null && row.profitPoint != null){
+        row.payableMoney = row.carryAmount * row.profitPoint;
+      }
+      if(row.payableMoney != null && row.baseMoney != null){
+        row.overMoney = row.baseMoney - row.payableMoney;
+        if(row.overMoney < 0){
+          row.overMoney = 0;
+        }
+      }
+      if(row.baseMoney != null && row.payableMoney != null){
+        row.realMoney = row.payableMoney < row.baseMoney ? row.baseMoney : row.payableMoney;
+        if(row.accidentMoney != null){
+          row.realMoney =  row.realMoney -  row.accidentMoney;
+        }
+      }
+      this.timerstamp = new Date().valueOf();
+      console.log(row)
     },
     cstRowClassName({row, rowIndex}) {
       if (rowIndex % 2 === 1) {
@@ -363,37 +392,37 @@ export default {
       }
       return '';
     },
-    manageLoad() {
-      this.manageListLoading = true;
-      this.manageBusy = true;
-      fetchList(this.manageListQuery).then(response => {
-        this.manageListLoading = false;
+    driverLoad() {
+      this.driverListLoading = true;
+      this.driverBusy = true;
+      fetchList(this.topListQuery).then(response => {
+        this.driverListLoading = false;
         let list1 = response.data.data;
         this.manageTotal = response.data.total;
         if (list1 == null || list1.length <= 0) {
           this.$message.success('您要的太多，而我已经没有了');
         }
-        if (this.manageListQuery.pageNum === 1) {
-          this.manageList = list1;
+        if (this.topListQuery.pageNum === 1) {
+          this.driverList = list1;
         } else {
-          this.manageList = this.manageList.concat(list1);
+          this.driverList = this.driverList.concat(list1);
         }
-        this.manageListQuery.pageNum = this.manageListQuery.pageNum + 1;
+        this.topListQuery.pageNum = this.topListQuery.pageNum + 1;
       });
-      this.manageBusy = false;
+      this.driverBusy = false;
     },
-    itemLoad(row) {
+    carryDetailLoad(row) {
       console.log(row.listQuery)
       if (row.cstFinished) {
-        row.cstListLoading = false;
+        row.itemListLoading = false;
         return;
       }
-      row.cstListLoading = true;
-      row.listQuery.manageId = row.id;
+      row.itemListLoading = true;
+      row.listQuery.driverId = row.id;
       row.listQuery.date = this.date;
-      row.cstBusy = true;
+      row.itemBusy = true;
       fetchCstList(row.listQuery).then(response => {
-        row.cstListLoading = false;
+        row.itemListLoading = false;
         let list1 = response.data.data;
         row.cstTotal = response.data.total;
         if (list1 == null || list1.length <= 0) {
@@ -407,25 +436,25 @@ export default {
         } else {
           row.child = row.child.concat(list1);
         }
-        row.cstBusy = false;
-        row.cstListLoading = false;
+        row.itemBusy = false;
+        row.itemListLoading = false;
         this.timerstamp = new Date().valueOf();
         row.cstCount = row.cstTotal;
         console.log(row.listQuery)
       });
     },
     handleSearchList() {
-      this.manageListQuery.pageNum = 1;
-      this.manageLoad();
+      this.topListQuery.pageNum = 1;
+      this.driverLoad();
     },
-    handleAddManage() {
+    handleAddDriver() {
       //新增一条表记录，获取一个id
       createId().then(response => {
         let id = response.data
         let newRow = {};
         Object.assign(newRow, this.newComRow);
         newRow.id = id;
-        this.manageList.push(newRow);
+        this.driverList.push(newRow);
         this.comCount++;
       })
       // this.$router.push({path: '/pms/addProduct'});
@@ -435,9 +464,11 @@ export default {
       createId().then(response => {
         let id = response.data
         let newRow = {};
-        Object.assign(newRow, this.newIncomeRow);
+        Object.assign(newRow, defaultIncomeRow);
         newRow.id = id;
-        newRow.manageId = row.id;
+        newRow.driverId = row.id;
+        newRow.profitPoint = row.profitPoint;
+        newRow.baseMoney = row.baseMoney;
         row.child.push(newRow);
         row.cstCount++;
       })
@@ -445,7 +476,7 @@ export default {
     },
     handleResetSearch() {
       this.selectProductCateValue = [];
-      this.manageListQuery = Object.assign({}, defaultComListQuery);
+      this.topListQuery = Object.assign({}, defaultComListQuery);
       this.handleSearchList();
     },
     handleDeleteManage(row) {
@@ -457,8 +488,8 @@ export default {
         doDelete(row.id).then(response => {
           if (response != null && response.data) {
             this.$message.success("删除成功");
-            this.manageList.splice(
-              this.manageList.find(order => {
+            this.driverList.splice(
+              this.driverList.find(order => {
                 return order.id === id;
               }), 1);
           }

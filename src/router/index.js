@@ -59,26 +59,26 @@ export const asyncRouterMap = [
     }]
   },
   {
-    path: '/spending',
+    path: '/outcome',
     component: Layout,
-    redirect: '/spending/page',
-    name: 'spending',
+    redirect: '/outcome/page',
+    name: 'outcome',
     meta: {title: '支出管理', icon: 'sms-coupon'},
     children: [{
       path: 'page',
       name: 'page',
-      component: () => import('@/views/spending/index'),
+      component: () => import('@/views/outcome/index'),
       meta: {title: '支出详情', icon: 'product-list'}
     },{
       path: 'erdao',
       name: 'erdao',
-      component: () => import('@/views/spending/erdao/index'),
+      component: () => import('@/views/outcome/erdao/index'),
       meta: {title: '二道支出列表', icon: 'product-comment'}
     },{
-      path: 'chetou',
-      name: 'chetou',
-      component: () => import('@/views/spending/chetou/index'),
-      meta: {title: '车头支出列表', icon: 'order'}
+      path: 'provider',
+      name: 'provider',
+      component: () => import('@/views/outcome/provider/index'),
+      meta: {title: '供应商支出列表', icon: 'order'}
     }]
   },
   {
