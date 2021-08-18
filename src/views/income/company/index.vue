@@ -69,7 +69,7 @@
                   <el-table-column label="详情-客户名称" style="width: 50%" align="center">
                     <editable-cell slot-scope="{row}"
                                    :can-edit="true"
-                                   v-on:blur="handleCstInputChange(scope.row,row)"
+                                   v-on:blur="handleCstInputChange(scope.$index,scope.row,row)"
                                    v-model="row.name">
                       <span slot="content">{{ row.name }}</span>
                     </editable-cell>
@@ -77,7 +77,7 @@
                   <el-table-column label="详情-收入(人民币)" style="width: 30%" align="center">
                     <editable-cell slot-scope="{row}"
                                    :can-edit="true"
-                                   v-on:change="handleCstInputChange(scope.row,row)"
+                                   v-on:change="handleCstInputChange(scope.$index,scope.row,row)"
                                    v-model="row.money">
                       <span slot="content">{{ row.money }}</span>
                     </editable-cell>
@@ -108,48 +108,58 @@
             <template slot-scope="scope">{{ scope.row.id }}</template>
           </el-table-column>
           <el-table-column label="公司名称" width="120" align="center">
-            <editable-cell slot-scope="{row}"
+            <editable-cell slot-scope="scope"
                            :can-edit="true"
-                           v-on:blur="handleInputChange(row)"
-                           v-model="row.name">
-              <span slot="content">{{ row.name }}</span>
+                           v-on:blur="handleInputChange(scope.$index,scope.row)"
+                           v-model="scope.row.name">
+              <span slot="content">{{ scope.row.name }}</span>
             </editable-cell>
           </el-table-column>
           <el-table-column label="点数" align="center">
-            <editable-cell slot-scope="{row}"
+            <editable-cell slot-scope="scope"
                            :can-edit="true"
-                           v-on:blur="handleInputChange(row)"
-                           v-model="row.profitPoint">
-              <span slot="content">{{ row.profitPoint }}</span>
+                           v-on:blur="handleInputChange(scope.$index,scope.row)"
+                           v-model="scope.row.profitPoint">
+              <span slot="content">{{ scope.row.profitPoint }}</span>
             </editable-cell>
           </el-table-column>
+          <el-table-column label="今日总数" align="center">
+            <template slot-scope="scope">
+              <p>{{ scope.row.totalAmount }}</p>
+            </template>
+          </el-table-column>
+          <el-table-column label="今日毛利" align="center">
+            <template slot-scope="scope">
+              <p>{{ scope.row.profit }}</p>
+            </template>
+          </el-table-column>
           <el-table-column label="赔付" align="center">
-            <editable-cell slot-scope="{row}"
+            <editable-cell slot-scope="scope"
                            :can-edit="true"
-                           v-on:blur="handleInputChange(row)"
-                           v-model="row.lossPay">
-              <span slot="content">{{ row.lossPay }}</span>
+                           v-on:blur="handleInputChange(scope.$index,scope.row)"
+                           v-model="scope.row.lossPay">
+              <span slot="content">{{ scope.row.lossPay }}</span>
             </editable-cell>
           </el-table-column>
           <el-table-column label="没人领" align="center">
-            <editable-cell slot-scope="{row}"
+            <editable-cell slot-scope="scope"
                            :can-edit="true"
-                           v-on:blur="handleInputChange(row)"
-                           v-model="row.unclaimed">
-              <span slot="content">{{ row.unclaimed }}</span>
+                           v-on:blur="handleInputChange(scope.$index,scope.row)"
+                           v-model="scope.row.unclaimed">
+              <span slot="content">{{ scope.row.unclaimed }}</span>
             </editable-cell>
           </el-table-column>
           <el-table-column label="踩" align="center">
-            <editable-cell slot-scope="{row}"
+            <editable-cell slot-scope="scope"
                            :can-edit="true"
-                           v-on:blur="handleInputChange(row)"
-                           v-model="row.stamp">
-              <span slot="content">{{ row.stamp }}</span>
+                           v-on:blur="handleInputChange(scope.$index,scope.row)"
+                           v-model="scope.row.stamp">
+              <span slot="content">{{ scope.row.stamp }}</span>
             </editable-cell>
           </el-table-column>
-          <el-table-column label="客户数量" align="center">
+          <el-table-column label="总利润" align="center">
             <template slot-scope="scope">
-              <p>{{ scope.row.staffNum }}</p>
+              <p>{{ scope.row.grossProfit }}</p>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="300" align="center">
@@ -179,7 +189,7 @@
   </div>
 </template>
 <script>
-import {doDelete, fetchCstList, fetchList, getTodayMoney, upsertCstIncome} from "@/api/company";
+import {doDelete, fetchCstList, fetchList, upsertCstIncome} from "@/api/company";
 import {createId} from "@/api/primaryutils";
 import EditableCell from "@/components/Table/EditableCell.vue";
 import elTableInfiniteScroll from 'el-table-infinite-scroll';
@@ -241,8 +251,8 @@ export default {
       comListQuery: Object.assign({}, defaultComListQuery),
       newComRow: Object.assign({}, defaultComRow),
       newIncomeRow: Object.assign({}, defaultIncomeRow),
-      companyList: null,
-      cstList: null,
+      companyList: [],
+      cstList: [],
       comTotal: null,
       currComRow: null,
       drawerFirstLoad: true,
@@ -253,6 +263,7 @@ export default {
       todayMoney: null,
       date: null,
       flag: false,
+      timerstamp1: 0,
       timerstamp: 0,
       showDrawerClose: false,
       drawerTitle: "默认",
@@ -346,21 +357,23 @@ export default {
       }
       return scope.$index >= this.comCount - 1;
     },
-    handleInputChange(row) {
+    handleInputChange(index,row) {
       let com = Object.assign({}, this.newComRow);
       com.id = row.id
       com.name = row.name
       com.profitPoint = row.profitPoint
       upsert(row).then(response => {
         if (response.data > 0) {
+          this.reQueryByComId(index,com.id)
           this.$message.success('更新成功');
         }
       })
     },
-    handleCstInputChange(prow,row) {
+    handleCstInputChange(index,prow,row) {
       row.comId = prow.id;
       upsertCstIncome(row).then(response => {
         if (response.data > 0) {
+          this.reQueryByComId(index,row.comId);
           this.$message.success('更新成功');
         }
       })
@@ -382,15 +395,32 @@ export default {
         this.comTotal = response.data.total;
         if (list1 == null || list1.length <= 0) {
           this.$message.success('您要的太多，而我已经没有了');
+        } else if(list1.length > 0){
+          if (this.comListQuery.pageNum === 1) {
+            this.companyList = list1;
+          } else {
+            this.companyList = this.companyList.concat(list1);
+          }
+          this.comListQuery.pageNum = this.comListQuery.pageNum + 1;
         }
-        if (this.comListQuery.pageNum === 1) {
-          this.companyList = list1;
-        } else {
-          this.companyList = this.companyList.concat(list1);
-        }
-        this.comListQuery.pageNum = this.comListQuery.pageNum + 1;
       });
       this.comBusy = false;
+    },
+    reQueryByComId(index,comId) {
+      let comIdQuery = Object.assign({},defaultComListQuery);
+      comIdQuery.id = comId;
+      fetchList(comIdQuery).then(response => {
+        let list1 = response.data.data;
+        this.comTotal = response.data.total;
+        if (list1 == null || list1.length <= 0) {
+          this.$message.success('您要的太多，而我已经没有了');
+        } else if(list1.length > 0){
+          this.companyList[index].profit = list1[0].profit;
+          this.companyList[index].staffNum = list1[0].staffNum;
+          this.companyList[index].totalAmount = list1[0].totalAmount;
+          this.companyList[index].grossProfit = list1[0].grossProfit;
+        }
+      });
     },
     customerLoad(row) {
       console.log(row.listQuery)
@@ -414,7 +444,7 @@ export default {
         }
         if (row.listQuery.pageNum === 1) {
           row.child = list1;
-        } else {
+        } else if(list1.length > 0){
           row.child = row.child.concat(list1);
         }
         row.cstBusy = false;

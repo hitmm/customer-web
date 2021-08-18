@@ -182,7 +182,7 @@
   </div>
 </template>
 <script>
-import {doDelete,upsert, fetchCstList, fetchList, getTodayMoney, upsertCstIncome} from "@/api/driver";
+import {doDelete,upsert, fetchCstList, fetchList, upsertCstIncome} from "@/api/driver";
 import {createId} from "@/api/primaryutils";
 import EditableCell from "@/components/Table/EditableCell.vue";
 import elTableInfiniteScroll from 'el-table-infinite-scroll';
