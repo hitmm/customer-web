@@ -182,8 +182,7 @@
   </div>
 </template>
 <script>
-import {doDelete,upsert, fetchCstList, fetchList, upsertCstIncome} from "@/api/driver";
-import {createId} from "@/api/primaryutils";
+import {createId,createDetailId,doDelete,upsert, fetchDetailList, fetchList, upsertCarryDetail} from "@/api/driver";
 import EditableCell from "@/components/Table/EditableCell.vue";
 import elTableInfiniteScroll from 'el-table-infinite-scroll';
 import img_home_today_amount from '@/assets/images/home_today_amount.png';
@@ -233,7 +232,7 @@ export default {
       }
     }
   },
-  name: "companyList",
+  name: "erdaoOutcome",
   data() {
     return {
       tableHeight: "100px",
@@ -277,21 +276,6 @@ export default {
       row.itemBusy = false;
       row.cstCount = 0;
       row.child = [];
-    },
-    timerLoading() {
-      if (this.currComRow == null) {
-        return;
-      }
-      let comId = this.currComRow.id;
-      let params = {"id": comId, "pageNum": 1, "pageSize": 1}
-      getTodayMoney(params).then(response => {
-        let data = response.data.data;
-        if (data.length > 0) {
-          this.todayMoney = data[0].todayMoney;
-        } else {
-          this.todayMoney = null;
-        }
-      });
     },
     changeDate() {
       this.carryDetailLoad();
@@ -358,7 +342,7 @@ export default {
     },
     handleItemInputChange(prow, row) {
       row.driverId = prow.id;
-      upsertCstIncome(row).then(response => {
+      upsertCarryDetail(row).then(response => {
         if (response.data > 0) {
           this.$message.success('更新成功');
           this.cal(row)
@@ -401,13 +385,14 @@ export default {
         this.manageTotal = response.data.total;
         if (list1 == null || list1.length <= 0) {
           this.$message.success('您要的太多，而我已经没有了');
+        }else {
+          if (this.topListQuery.pageNum === 1) {
+            this.driverList = list1;
+          } else {
+            this.driverList = this.driverList.concat(list1);
+          }
+          this.topListQuery.pageNum = this.topListQuery.pageNum + 1;
         }
-        if (this.topListQuery.pageNum === 1) {
-          this.driverList = list1;
-        } else {
-          this.driverList = this.driverList.concat(list1);
-        }
-        this.topListQuery.pageNum = this.topListQuery.pageNum + 1;
       });
       this.driverBusy = false;
     },
@@ -421,7 +406,7 @@ export default {
       row.listQuery.driverId = row.id;
       row.listQuery.date = this.date;
       row.itemBusy = true;
-      fetchCstList(row.listQuery).then(response => {
+      fetchDetailList(row.listQuery).then(response => {
         row.itemListLoading = false;
         let list1 = response.data.data;
         row.cstTotal = response.data.total;
@@ -429,12 +414,12 @@ export default {
           this.$message.success('您要的太多，而我已经没有了');
           row.cstFinished = true;
         } else {
+          if (row.listQuery.pageNum === 1) {
+            row.child = list1;
+          } else {
+            row.child = row.child.concat(list1);
+          }
           row.listQuery.pageNum = row.listQuery.pageNum + 1;
-        }
-        if (row.listQuery.pageNum === 1) {
-          row.child = list1;
-        } else {
-          row.child = row.child.concat(list1);
         }
         row.itemBusy = false;
         row.itemListLoading = false;

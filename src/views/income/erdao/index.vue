@@ -391,12 +391,12 @@ export default {
         if (list1 == null || list1.length <= 0) {
           this.$message.success('您要的太多，而我已经没有了');
         }else {
+          if (this.manageListQuery.pageNum === 1) {
+            this.manageList = list1;
+          } else {
+            this.manageList = this.manageList.concat(list1);
+          }
           this.manageListQuery.pageNum = this.manageListQuery.pageNum + 1;
-        }
-        if (this.manageListQuery.pageNum === 1) {
-          this.manageList = list1;
-        } else {
-          this.manageList = this.manageList.concat(list1);
         }
       });
       this.manageBusy = false;

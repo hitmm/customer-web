@@ -439,12 +439,12 @@ export default {
           this.$message.success('您要的太多，而我已经没有了');
           row.cstFinished = true;
         } else {
+          if (row.listQuery.pageNum === 1) {
+            row.child = list1;
+          } else if(list1.length > 0){
+            row.child = row.child.concat(list1);
+          }
           row.listQuery.pageNum = row.listQuery.pageNum + 1;
-        }
-        if (row.listQuery.pageNum === 1) {
-          row.child = list1;
-        } else if(list1.length > 0){
-          row.child = row.child.concat(list1);
         }
         row.cstBusy = false;
         row.cstListLoading = false;

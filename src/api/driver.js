@@ -5,6 +5,12 @@ export function createId() {
     method:'get'
   })
 }
+export function createDetailId() {
+  return request({
+    url:'/carryDetail/createId',
+    method:'get'
+  })
+}
 export function fetchList(params) {
   return request({
     url:'/driverInfo/list',
@@ -13,7 +19,7 @@ export function fetchList(params) {
   })
 }
 
-export function fetchCstList(params) {
+export function fetchDetailList(params) {
   return request({
     url:'/carryDetail/list',
     method:'get',
@@ -42,7 +48,7 @@ export function doDeleteCstIncome(id) {
 }
 
 
-export function upsertCstIncome(data) {
+export function upsertCarryDetail(data) {
   return request({
     url:'/carryDetail/upsert',
     method:'post',
