@@ -1,4 +1,16 @@
 import request from '@/utils/request'
+export function createComId() {
+  return request({
+    url:'/company/createId',
+    method:'get'
+  })
+}
+export function createCustomerIncomeId() {
+  return request({
+    url:'/customer/createId',
+    method:'get'
+  })
+}
 export function fetchList(params) {
   return request({
     url:'/company/list',

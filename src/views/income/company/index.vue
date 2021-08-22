@@ -189,8 +189,7 @@
   </div>
 </template>
 <script>
-import {doDelete, fetchCstList, fetchList, upsertCstIncome} from "@/api/company";
-import {createId} from "@/api/primaryutils";
+import {createComId,createCustomerIncomeId,doDelete, fetchCstList, fetchList, upsertCstIncome} from "@/api/company";
 import EditableCell from "@/components/Table/EditableCell.vue";
 import elTableInfiniteScroll from 'el-table-infinite-scroll';
 import img_home_today_amount from '@/assets/images/home_today_amount.png';
@@ -460,7 +459,7 @@ export default {
     },
     handleAddCom() {
       //新增一条表记录，获取一个id
-      createId().then(response => {
+      createComId().then(response => {
         let id = response.data
         let newRow = {};
         Object.assign(newRow, this.newComRow);
@@ -472,7 +471,7 @@ export default {
     },
     handleAddCstIncome(row) {
       //新增一条表记录，获取一个id
-      createId().then(response => {
+      createCustomerIncomeId().then(response => {
         let id = response.data
         let newRow = {};
         Object.assign(newRow, this.newIncomeRow);

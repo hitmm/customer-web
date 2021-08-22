@@ -1,4 +1,16 @@
 import request from '@/utils/request'
+export function createManageId() {
+  return request({
+    url:'/erdaoManage/createId',
+    method:'get'
+  })
+}
+export function createErdaoIncomeId() {
+  return request({
+    url:'/erdaoIncome/createId',
+    method:'get'
+  })
+}
 export function fetchList(params) {
   return request({
     url:'/erdaoManage/list',

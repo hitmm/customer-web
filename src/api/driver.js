@@ -1,4 +1,10 @@
 import request from '@/utils/request'
+export function createId() {
+  return request({
+    url:'/driverInfo/createId',
+    method:'get'
+  })
+}
 export function fetchList(params) {
   return request({
     url:'/driverInfo/list',
