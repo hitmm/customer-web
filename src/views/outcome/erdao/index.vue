@@ -187,9 +187,9 @@ import EditableCell from "@/components/Table/EditableCell.vue";
 import elTableInfiniteScroll from 'el-table-infinite-scroll';
 import img_home_today_amount from '@/assets/images/home_today_amount.png';
 
-const defaultComListQuery = {
+const defaulDriverListQuery = {
   name: null,
-  cstName: null,
+  id: null,
   pageNum: 1,
   pageSize: 5,
 };
@@ -239,11 +239,11 @@ export default {
       driverBusy: false,
       itemBusy: false,
       operateType: null,
-      topListQuery: Object.assign({}, defaultComListQuery),
+      topListQuery: Object.assign({}, defaulDriverListQuery),
       newComRow: Object.assign({}, defaultComRow),
       newIncomeRow: Object.assign({}, defaultIncomeRow),
-      driverList: null,
-      cstList: null,
+      driverList: [],
+      detailList: [],
       manageTotal: null,
       currComRow: null,
       drawerFirstLoad: true,
@@ -281,11 +281,11 @@ export default {
       this.carryDetailLoad();
     },
     customerReset() {
-      this.cstList = [];
+      this.detailList = [];
       this.cstTotal = null;
       this.drawerFirstLoad = true;
       this.currComRow = null;
-      this.cstListQuery = Object.assign({}, defaultErdaoItemListQuery);
+      this.detailListQuery = Object.assign({}, defaultErdaoItemListQuery);
     },
     dateFormat(time) {
       let date = new Date(time);
@@ -345,11 +345,32 @@ export default {
       upsertCarryDetail(row).then(response => {
         if (response.data > 0) {
           this.$message.success('更新成功');
-          this.cal(row)
+          this.calItem(row)
+          this.calDriver(prow,row)
         }
       })
     },
-    cal(row) {
+    calDriver(prow,row) {
+      let driverQuery = Object.assign({},defaulDriverListQuery);
+      driverQuery.id = prow.id;
+      fetchList(driverQuery).then(response => {
+        let list1 = response.data.data;
+        this.comTotal = response.data.total;
+        if (list1 == null || list1.length <= 0) {
+          this.$message.success('您要的太多，而我已经没有了');
+        } else if(list1.length > 0){
+          prow.accidentMoney = list1[0].accidentMoney;
+          prow.baseMoney = list1[0].baseMoney;
+          prow.overflowMoney = list1[0].overflowMoney;
+          prow.payableMoney = list1[0].payableMoney;
+          prow.profitPoint = list1[0].profitPoint;
+          prow.realMoney = list1[0].realMoney;
+          prow.totalAmount = list1[0].totalAmount;
+        }
+      });
+      console.log(row)
+    },
+    calItem(row) {
       if(row.carryAmount != null && row.profitPoint != null){
         row.payableMoney = row.carryAmount * row.profitPoint;
       }
@@ -385,6 +406,9 @@ export default {
         this.manageTotal = response.data.total;
         if (list1 == null || list1.length <= 0) {
           this.$message.success('您要的太多，而我已经没有了');
+          if (this.topListQuery.pageNum === 1) {
+            this.driverList = [];
+          }
         }else {
           if (this.topListQuery.pageNum === 1) {
             this.driverList = list1;
@@ -461,7 +485,7 @@ export default {
     },
     handleResetSearch() {
       this.selectProductCateValue = [];
-      this.topListQuery = Object.assign({}, defaultComListQuery);
+      this.topListQuery = Object.assign({}, defaulDriverListQuery);
       this.handleSearchList();
     },
     handleDeleteManage(row) {
