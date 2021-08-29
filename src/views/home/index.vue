@@ -5,29 +5,29 @@
         <el-col :span="6">
           <div class="total-frame">
             <img :src="img_home_order" class="total-icon">
-            <div class="total-title">今日收入款项数量</div>
-            <div class="total-value">{{ incomeCount }}</div>
+            <div class="total-title">今日收入金额</div>
+            <div class="total-value">{{ todayIncome }}</div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="total-frame">
             <img :src="img_home_today_amount" class="total-icon">
-            <div class="total-title">今日支出款项数量</div>
-            <div class="total-value">{{ spendingCount }}</div>
+            <div class="total-title">今日支出金额</div>
+            <div class="total-value">{{ todayOutcome }}</div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="total-frame">
             <img :src="img_home_yesterday_amount" class="total-icon">
             <div class="total-title">今日实际盈利</div>
-            <div class="total-value">{{ todayTotal }}</div>
+            <div class="total-value">{{ todayProfit }}</div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="total-frame">
             <img :src="img_home_yesterday_amount" class="total-icon">
             <div class="total-title">月度实际盈利</div>
-            <div class="total-value">{{ monthTotal }}</div>
+            <div class="total-value">{{ monthProfit }}</div>
           </div>
         </el-col>
       </el-row>
@@ -35,29 +35,29 @@
         <el-col :span="6">
           <div class="total-frame">
             <img :src="img_home_order" class="total-icon">
-            <div class="total-title">昨日收入款项数量</div>
-            <div class="total-value">{{ yIncomeCount }}</div>
+            <div class="total-title">昨日收入金额</div>
+            <div class="total-value">{{ yesterdayIncome }}</div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="total-frame">
             <img :src="img_home_today_amount" class="total-icon">
-            <div class="total-title">昨日支出款项数量</div>
-            <div class="total-value">{{ ySpendingCount }}</div>
+            <div class="total-title">昨日支出金额</div>
+            <div class="total-value">{{ yesterdayOutcome }}</div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="total-frame">
             <img :src="img_home_yesterday_amount" class="total-icon">
             <div class="total-title">昨日实际盈利</div>
-            <div class="total-value">{{ yesterdayTotal }}</div>
+            <div class="total-value">{{ yesterdayProfit }}</div>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="total-frame">
             <img :src="img_home_yesterday_amount" class="total-icon">
             <div class="total-title">季度实际盈利</div>
-            <div class="total-value">{{ quarterTotal }}</div>
+            <div class="total-value">{{ seasonProfit }}</div>
           </div>
         </el-col>
       </el-row>
@@ -65,48 +65,12 @@
     <div class="statistics-layout">
       <div class="layout-title">总体盈利统计</div>
       <el-row>
-        <el-col :span="4">
-          <div style="padding: 20px">
-            <div>
-              <div style="color: #909399;font-size: 14px">本月订单总数</div>
-              <div style="color: #606266;font-size: 24px;padding: 10px 0">10000</div>
-              <div>
-                <span class="color-success" style="font-size: 14px">+10%</span>
-                <span style="color: #C0C4CC;font-size: 14px">同比上月</span>
-              </div>
-            </div>
-            <div style="margin-top: 20px;">
-              <div style="color: #909399;font-size: 14px">本周订单总数</div>
-              <div style="color: #606266;font-size: 24px;padding: 10px 0">1000</div>
-              <div>
-                <span class="color-danger" style="font-size: 14px">-10%</span>
-                <span style="color: #C0C4CC;font-size: 14px">同比上周</span>
-              </div>
-            </div>
-            <div style="margin-top: 20px;">
-              <div style="color: #909399;font-size: 14px">本月销售总额</div>
-              <div style="color: #606266;font-size: 24px;padding: 10px 0">100000</div>
-              <div>
-                <span class="color-success" style="font-size: 14px">+10%</span>
-                <span style="color: #C0C4CC;font-size: 14px">同比上月</span>
-              </div>
-            </div>
-            <div style="margin-top: 20px;">
-              <div style="color: #909399;font-size: 14px">本周销售总额</div>
-              <div style="color: #606266;font-size: 24px;padding: 10px 0">50000</div>
-              <div>
-                <span class="color-danger" style="font-size: 14px">-10%</span>
-                <span style="color: #C0C4CC;font-size: 14px">同比上周</span>
-              </div>
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="20">
+        <el-col :span="24">
           <div style="padding: 10px;border-left:1px solid #DCDFE6">
             <el-date-picker
               style="float: right;z-index: 1"
               size="small"
-              v-model="orderCountDate"
+              v-model="date"
               type="daterange"
               align="right"
               unlink-panels
@@ -116,10 +80,10 @@
               @change="handleDateChange"
               :picker-options="pickerOptions">
             </el-date-picker>
-            <div>
+            <div style="text-align: center">
               <ve-line
                 :data="chartData"
-                :legend-visible="false"
+                :legend-visible="true"
                 :loading="loading"
                 :data-empty="dataEmpty"
                 :settings="chartSettings"></ve-line>
@@ -133,33 +97,27 @@
 
 <script>
   import {str2Date} from '@/utils/date';
+  import {fetchDetail,fetchInfo} from '@/api/summary'
   import img_home_order from '@/assets/images/home_order.png';
   import img_home_today_amount from '@/assets/images/home_today_amount.png';
   import img_home_yesterday_amount from '@/assets/images/home_yesterday_amount.png';
   const DATA_FROM_BACKEND = {
-    columns: ['date', 'orderCount','orderAmount'],
+    columns: ['date', 'income','outcome'],
     rows: [
-      {date: '2018-11-01', orderCount: 10, orderAmount: 1093},
-      {date: '2018-11-02', orderCount: 20, orderAmount: 2230},
-      {date: '2018-11-03', orderCount: 33, orderAmount: 3623},
-      {date: '2018-11-04', orderCount: 50, orderAmount: 6423},
-      {date: '2018-11-05', orderCount: 80, orderAmount: 8492},
-      {date: '2018-11-06', orderCount: 60, orderAmount: 6293},
-      {date: '2018-11-07', orderCount: 20, orderAmount: 2293},
-      {date: '2018-11-08', orderCount: 60, orderAmount: 6293},
-      {date: '2018-11-09', orderCount: 50, orderAmount: 5293},
-      {date: '2018-11-10', orderCount: 30, orderAmount: 3293},
-      {date: '2018-11-11', orderCount: 20, orderAmount: 2293},
-      {date: '2018-11-12', orderCount: 80, orderAmount: 8293},
-      {date: '2018-11-13', orderCount: 100, orderAmount: 10293},
-      {date: '2018-11-14', orderCount: 10, orderAmount: 1293},
-      {date: '2018-11-15', orderCount: 40, orderAmount: 4293}
     ]
   };
   export default {
     name: 'home',
     data() {
       return {
+        todayIncome: "",
+        todayOutcome: "",
+        yesterdayIncome: "",
+        yesterdayOutcome: "",
+        todayProfit: "",
+        yesterdayProfit: "",
+        monthProfit: "",
+        seasonProfit:"",
         pickerOptions: {
           shortcuts: [{
             text: '最近一周',
@@ -185,12 +143,12 @@
             }
           }]
         },
-        orderCountDate: '',
+        date: '',
         chartSettings: {
           xAxisType: 'time',
           area:true,
-          axisSite: { right: ['orderAmount']},
-        labelMap: {'orderCount': '订单数量', 'orderAmount': '订单金额'}},
+          axisSite: { right: ['outcome']},
+        labelMap: {'income': '收入', 'outcome': '支出'}},
         chartData: {
           columns: [],
           rows: []
@@ -203,37 +161,66 @@
       }
     },
     created(){
-      this.initOrderCountDate();
-      this.getData();
+      this.initTotalIncomeDate();
+      this.fetchChartData();
+      this.fetchCommonData();
     },
     methods:{
       handleDateChange(){
-        this.getData();
+        this.fetchChartData();
       },
-      initOrderCountDate(){
+      initTotalIncomeDate(){
         let start = new Date();
-        start.setFullYear(2018);
-        start.setMonth(10);
-        start.setDate(1);
         const end = new Date();
-        end.setTime(start.getTime() + 1000 * 60 * 60 * 24 * 7);
-        this.orderCountDate=[start,end];
+        start.setTime(end.getTime() - 1000 * 60 * 60 * 24 * 30);
+        this.date=[start,end];
       },
-      getData(){
+      fetchChartData(){
         setTimeout(() => {
           this.chartData = {
-            columns: ['date', 'orderCount','orderAmount'],
+            columns: ['date', 'income','outcome'],
             rows: []
           };
-          for(let i=0;i<DATA_FROM_BACKEND.rows.length;i++){
-            let item=DATA_FROM_BACKEND.rows[i];
-            let currDate=str2Date(item.date);
-            let start=this.orderCountDate[0];
-            let end=this.orderCountDate[1];
-            if(currDate.getTime()>=start.getTime()&&currDate.getTime()<=end.getTime()){
+          let params = {};
+          console.log(typeof this.date[0])
+          params.startDate = this.date[0].getTime();
+          params.endDate = this.date[1].getTime();
+          console.log(params)
+          fetchInfo(params).then(response => {
+            let data = response.data
+            let dateList = data.dateList;
+            let incomeMap = data.incomeMap;
+            let outcomeMap = data.outcomeMap;
+            for(let i=0;i< dateList.length;i++){
+              let item= {};
+              let dateItem = dateList[i];
+              let income = incomeMap[dateItem];
+              let outcome = outcomeMap[dateItem];
+              item.date = dateItem;
+              item.income = income;
+              item.outcome = outcome;
               this.chartData.rows.push(item);
             }
-          }
+            console.log(this.chartData)
+            this.dataEmpty = false;
+            this.loading = false
+          })
+        }, 1000)
+      },
+      fetchCommonData(){
+        setTimeout(() => {
+          fetchDetail().then(response => {
+            let data = response.data
+            console.log(data)
+            this.todayIncome = data.todayIncome;
+            this.todayOutcome = data.todayOutcome;
+            this.yesterdayIncome = data.yesterdayIncome;
+            this.yesterdayOutcome = data.yesterdayOutcome;
+            this.todayProfit = data.todayProfit;
+            this.yesterdayProfit = data.yesterdayProfit;
+            this.monthProfit = data.monthProfit;
+            this.seasonProfit = data.seasonProfit;
+          })
           this.dataEmpty = false;
           this.loading = false
         }, 1000)

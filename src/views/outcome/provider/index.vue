@@ -20,15 +20,15 @@
       </div>
       <div style="margin-top: 15px">
         <el-form :inline="true" :model="topListQuery" size="small" label-width="140px">
-          <el-form-item label="司机名称：">
-            <el-input style="width: 203px" v-model="topListQuery.name" placeholder="司机名称"></el-input>
+          <el-form-item label="供应商名称：">
+            <el-input style="width: 203px" v-model="topListQuery.name" placeholder="供应商名称"></el-input>
           </el-form-item>
         </el-form>
       </div>
     </el-card>
     <el-card class="operate-container" shadow="never">
       <i class="el-icon-tickets"></i>
-      <span>二道支出列表(货币以<a style="color: red">人民币</a>为单位)</span>
+      <span>供应商收支列表(货币以<a style="color: red">人民币</a>为单位)</span>
       <el-button
         style="float: right;margin-right: 15px"
         @click="handleAddProvider()"
@@ -38,13 +38,43 @@
       </el-button>
     </el-card>
     <div class="table-container">
+      <div style="margin: 15px">
+        <el-tag type="success">
+          供应商筛选时间范围:
+        </el-tag>
+        <el-date-picker
+          v-model="prdDate"
+          style="margin-right: 15px"
+          type="daterange"
+          @change="changePrdDate"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          value-format="timestamp"
+          :picker-options="pickerOptions">
+        </el-date-picker>
+        <el-tag type="success" style="margin-left: 100px">
+          收支筛选时间范围:
+        </el-tag>
+        <el-date-picker
+          v-model="incomeDate"
+          style="margin-right: 15px"
+          type="daterange"
+          @change="changeCarryDate"
+          range-separator="至"
+          start-placeholder="开始日期"
+          end-placeholder="结束日期"
+          value-format="timestamp"
+          :picker-options="pickerOptions">
+        </el-date-picker>
+      </div>
         <el-table ref="companyTable"
                   :data="driverList"
                   style="width: 100%"
                   :row-style="{height: '0'}"
                   :cell-style="{padding: '0'}"
                   @expand-change="expandChange"
-                  v-el-table-infinite-scroll="driverLoad"
+                  v-el-table-infinite-scroll="prdLoad"
                   :infinite-scroll-disabled="driverBusy"
                   v-loading="driverListLoading"
                   border>
@@ -58,7 +88,7 @@
                           :row-style="{height: '0'}"
                           :cell-style="{padding: '0'}"
                           style="width: 100%;padding: 0;margin: 0"
-                          v-el-table-infinite-scroll="carryDetailLoad(scope.row)"
+                          v-el-table-infinite-scroll="incomeLoad(scope.row)"
                           :infinite-scroll-disabled="scope.row.itemBusy"
                           v-loading="scope.row.itemListLoading"
                           :row-class-name="cstRowClassName"
@@ -113,15 +143,10 @@
             </editable-cell>
           </el-table-column>
           <el-table-column label="总入" align="center">
-            <template slot-scope="{row}">{{ row.totalAmount }}</template>
+            <template slot-scope="{row}">{{ row.totalIncome }}</template>
           </el-table-column>
           <el-table-column label="总回款" align="center">
-            <editable-cell slot-scope="{row}"
-                           :can-edit="true"
-                           v-on:blur="handleInputChange(row)"
-                           v-model="row.profitPoint">
-              <span slot="content">{{ row.profitPoint }}</span>
-            </editable-cell>
+            <template slot-scope="{row}">{{ row.totalOutcome }}</template>
           </el-table-column>
           <el-table-column label="操作" width="300" align="center">
             <template slot-scope="scope">
@@ -204,6 +229,43 @@ export default {
   name: "companyList",
   data() {
     return {
+      pickerOptions: {
+        shortcuts: [{
+          text: '昨天',
+          onClick(picker) {
+            let zero = new Date(new Date(new Date().getTime()).setHours(0,0,0,0)) - 3600 * 1000 * 24;
+            const end = new Date();
+            const start = new Date();
+            start.setTime(zero);
+            end.setTime(zero + 3600 * 1000 * 24 - 1)
+            picker.$emit('pick', [start, end]);
+          }
+        }, {
+          text: '最近一周',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+            picker.$emit('pick', [start, end]);
+          }
+        }, {
+          text: '最近一个月',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 30);
+            picker.$emit('pick', [start, end]);
+          }
+        }, {
+          text: '最近三个月',
+          onClick(picker) {
+            const end = new Date();
+            const start = new Date();
+            start.setTime(start.getTime() - 3600 * 1000 * 24 * 90);
+            picker.$emit('pick', [start, end]);
+          }
+        }]
+      },
       tableHeight: "100px",
       driverBusy: false,
       itemBusy: false,
@@ -220,7 +282,8 @@ export default {
       cstTotal: null,
       cstCount: null,
       todayMoney: null,
-      date: null,
+      prdDate: null,
+      incomeDate: null,
       flag: false,
       timerstamp: 0,
       showDrawerClose: false,
@@ -245,23 +308,12 @@ export default {
       row.cstCount = 0;
       row.child = [];
     },
-    timerLoading() {
-      if (this.currComRow == null) {
-        return;
-      }
-      let comId = this.currComRow.id;
-      let params = {"id": comId, "pageNum": 1, "pageSize": 1}
-      getTodayMoney(params).then(response => {
-        let data = response.data.data;
-        if (data.length > 0) {
-          this.todayMoney = data[0].todayMoney;
-        } else {
-          this.todayMoney = null;
-        }
-      });
+    changeCarryDate() {
+      this.incomeLoad();
     },
-    changeDate() {
-      this.carryDetailLoad();
+    changePrdDate() {
+      console.log(this.prdDate);
+      this.prdLoad();
     },
     customerReset() {
       this.cstList = [];
@@ -358,7 +410,7 @@ export default {
             upsertOutcome(body).then(response => {
               if (response.data > 0) {
                 this.$message.success('更新成功');
-                this.cal(prow)
+                this.cal(prow,row)
               }
             })
           })
@@ -366,14 +418,25 @@ export default {
           upsertOutcome(body).then(response => {
             if (response.data > 0) {
               this.$message.success('更新成功');
-              this.cal(prow)
+              this.cal(prow,row)
             }
           })
         }
       }
     },
-    cal(row) {
-
+    cal(prow,row) {
+      let comIdQuery = Object.assign({},defaultComListQuery);
+      comIdQuery.prdId = prow.id;
+      fetchList(comIdQuery).then(response => {
+        let list1 = response.data.data;
+        this.manageTotal = response.data.total;
+        if (list1 == null || list1.length <= 0) {
+          this.$message.success('您要的太多，而我已经没有了');
+        }else {
+          prow.totalIncome = list1[0].totalIncome;
+          prow.totalOutcome = list1[0].totalOutcome;
+        }
+      });
     },
     cstRowClassName({row, rowIndex}) {
       if (rowIndex % 2 === 1) {
@@ -383,7 +446,7 @@ export default {
       }
       return '';
     },
-    driverLoad() {
+    prdLoad() {
       this.driverListLoading = true;
       this.driverBusy = true;
       fetchList(this.topListQuery).then(response => {
@@ -402,7 +465,7 @@ export default {
       });
       this.driverBusy = false;
     },
-    carryDetailLoad(row) {
+    incomeLoad(row) {
       console.log(row.listQuery)
       if (row.cstFinished) {
         row.itemListLoading = false;
@@ -436,7 +499,7 @@ export default {
     },
     handleSearchList() {
       this.topListQuery.pageNum = 1;
-      this.driverLoad();
+      this.prdLoad();
     },
     handleAddProvider() {
       //新增一条表记录，获取一个id
