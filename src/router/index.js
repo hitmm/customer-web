@@ -42,11 +42,6 @@ export const asyncRouterMap = [
     name: 'income',
     meta: {title: '收入管理', icon: 'product'},
     children: [{
-      path: 'page',
-      name: 'page',
-      component: () => import('@/views/income/index'),
-      meta: {title: '收入详情', icon: 'product-list'}
-    },{
       path: 'company',
       name: 'company',
       component: () => import('@/views/income/company/index'),
@@ -65,13 +60,8 @@ export const asyncRouterMap = [
     name: 'outcome',
     meta: {title: '支出管理', icon: 'sms-coupon'},
     children: [{
-      path: 'page',
-      name: 'page',
-      component: () => import('@/views/outcome/index'),
-      meta: {title: '支出详情', icon: 'product-list'}
-    },{
       path: 'erdao',
-      name: 'erdao',
+      name: 'erdaoOutcome',
       component: () => import('@/views/outcome/erdao/index'),
       meta: {title: '二道支出列表', icon: 'product-comment'}
     },{

@@ -37,7 +37,7 @@ export function doDelete(id) {
   })
 }
 
-export function doDeleteCstIncome(id) {
+export function doDeleteDetail(id) {
   let params = new URLSearchParams();
   params.append('id', id);
   return request({

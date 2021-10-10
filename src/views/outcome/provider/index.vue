@@ -131,9 +131,16 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="编号" width="100" align="center">
-            <template slot-scope="scope">{{ scope.row.id }}</template>
+
+          <el-table-column
+            type="index"
+            label="序号"
+            width="50">
           </el-table-column>
+<!--          -->
+<!--          <el-table-column label="编号" width="100" align="center">-->
+<!--            <template slot-scope="scope">{{ scope.row.id }}</template>-->
+<!--          </el-table-column>-->
           <el-table-column label="供应商姓名" width="120" align="center">
             <editable-cell slot-scope="{row}"
                            :can-edit="true"

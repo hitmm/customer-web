@@ -94,7 +94,7 @@
                         <el-button
                           size="mini"
                           type="danger"
-                          @click="handleDelete(scope.$index, scope.row)">删除
+                          @click="handleIncomeDelete(scope,itemScope.row)">删除
                         </el-button>
                       </p>
                     </template>
@@ -104,9 +104,14 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="编号" width="100" align="center">
-            <template slot-scope="scope">{{ scope.row.id }}</template>
+          <el-table-column
+            type="index"
+            label="序号"
+            width="50">
           </el-table-column>
+<!--          <el-table-column label="编号" width="100" align="center">-->
+<!--            <template slot-scope="scope">{{ scope.row.id }}</template>-->
+<!--          </el-table-column>-->
           <el-table-column label="公司名称" width="120" align="center">
             <editable-cell slot-scope="scope"
                            :can-edit="true"
@@ -189,11 +194,10 @@
   </div>
 </template>
 <script>
-import {createComId,createCustomerIncomeId,doDelete, fetchCstList, fetchList, upsertCstIncome} from "@/api/company";
+import {createComId,createCustomerIncomeId,doDelete,doDeleteCstIncome, fetchCstList, fetchList,upsert, upsertCstIncome} from "@/api/company";
 import EditableCell from "@/components/Table/EditableCell.vue";
 import elTableInfiniteScroll from 'el-table-infinite-scroll';
 import img_home_today_amount from '@/assets/images/home_today_amount.png';
-import {upsert} from "../../../api/company";
 
 const defaultComListQuery = {
   name: null,
@@ -334,6 +338,29 @@ export default {
         }
       }
       return true;
+    },
+    handleIncomeDelete(pscope,row){
+      let id = row.id;
+      this.$confirm('是否要进行删除操作?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        console.log("删除")
+        doDeleteCstIncome(id).then(response => {
+          if (response != null && response.data) {
+            this.$message.success("删除成功");
+            pscope.row.child.splice(
+              pscope.row.child.find(order => {
+                let f = order.id === id;
+                if(f){
+                  this.reQueryByComId(pscope.$index,order.comId)
+                }
+                return f;
+              }), 1);
+          }
+        })
+      });
     },
     showCstAdd(scope,itemScope) {
       if (this.date != null) {

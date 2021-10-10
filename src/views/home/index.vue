@@ -124,10 +124,7 @@
             onClick(picker) {
               const end = new Date();
               let start = new Date();
-              start.setFullYear(2018);
-              start.setMonth(10);
-              start.setDate(1);
-              end.setTime(start.getTime() + 3600 * 1000 * 24 * 7);
+              start.setTime(end.getTime() - 3600 * 1000 * 24 * 7);
               picker.$emit('pick', [start, end]);
             }
           }, {
@@ -135,10 +132,7 @@
             onClick(picker) {
               const end = new Date();
               let start = new Date();
-              start.setFullYear(2018);
-              start.setMonth(10);
-              start.setDate(1);
-              end.setTime(start.getTime() + 3600 * 1000 * 24 * 30);
+              start.setTime(end.getTime() - 3600 * 1000 * 24 * 30);
               picker.$emit('pick', [start, end]);
             }
           }]

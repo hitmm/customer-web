@@ -103,7 +103,7 @@
                         <el-button
                           size="mini"
                           type="danger"
-                          @click="handleDelete(scope.$index, scope.row)">删除
+                          @click="handleDeleteItem(scope, itemScope.row)">删除
                         </el-button>
                       </p>
                     </template>
@@ -113,9 +113,15 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="编号" width="100" align="center">
-            <template slot-scope="scope">{{ scope.row.id }}</template>
+          <el-table-column
+            type="index"
+            label="序号"
+            width="50">
           </el-table-column>
+
+<!--          <el-table-column label="编号" width="100" align="center">-->
+<!--            <template slot-scope="scope">{{ scope.row.id }}</template>-->
+<!--          </el-table-column>-->
           <el-table-column label="司机姓名" width="120" align="center">
             <editable-cell slot-scope="{row}"
                            :can-edit="true"
@@ -182,7 +188,7 @@
   </div>
 </template>
 <script>
-import {createId,createDetailId,doDelete,upsert, fetchDetailList, fetchList, upsertCarryDetail} from "@/api/driver";
+import {createId,createDetailId,doDelete,doDeleteDetail,upsert, fetchDetailList, fetchList, upsertCarryDetail} from "@/api/driver";
 import EditableCell from "@/components/Table/EditableCell.vue";
 import elTableInfiniteScroll from 'el-table-infinite-scroll';
 import img_home_today_amount from '@/assets/images/home_today_amount.png';
@@ -346,11 +352,11 @@ export default {
         if (response.data > 0) {
           this.$message.success('更新成功');
           this.calItem(row)
-          this.calDriver(prow,row)
+          this.calDriver(prow)
         }
       })
     },
-    calDriver(prow,row) {
+    calDriver(prow) {
       let driverQuery = Object.assign({},defaulDriverListQuery);
       driverQuery.id = prow.id;
       fetchList(driverQuery).then(response => {
@@ -368,7 +374,6 @@ export default {
           prow.totalAmount = list1[0].totalAmount;
         }
       });
-      console.log(row)
     },
     calItem(row) {
       if(row.carryAmount != null && row.profitPoint != null){
@@ -404,19 +409,19 @@ export default {
         this.driverListLoading = false;
         let list1 = response.data.data;
         this.manageTotal = response.data.total;
+        console.log(list1)
         if (list1 == null || list1.length <= 0) {
           this.$message.success('您要的太多，而我已经没有了');
-          if (this.topListQuery.pageNum === 1) {
-            this.driverList = [];
-          }
-        }else {
-          if (this.topListQuery.pageNum === 1) {
-            this.driverList = list1;
-          } else {
-            this.driverList = this.driverList.concat(list1);
-          }
-          this.topListQuery.pageNum = this.topListQuery.pageNum + 1;
         }
+        console.log(this.driverList)
+        if (this.topListQuery.pageNum === 1) {
+          this.driverList = list1;
+          console.log(this.driverList)
+        } else {
+          this.driverList = this.driverList.concat(list1);
+          console.log(this.driverList)
+        }
+        this.topListQuery.pageNum = this.topListQuery.pageNum + 1;
       });
       this.driverBusy = false;
     },
@@ -437,14 +442,13 @@ export default {
         if (list1 == null || list1.length <= 0) {
           this.$message.success('您要的太多，而我已经没有了');
           row.cstFinished = true;
-        } else {
-          if (row.listQuery.pageNum === 1) {
-            row.child = list1;
-          } else {
-            row.child = row.child.concat(list1);
-          }
-          row.listQuery.pageNum = row.listQuery.pageNum + 1;
         }
+        if (row.listQuery.pageNum === 1) {
+          row.child = list1;
+        } else {
+          row.child = row.child.concat(list1);
+        }
+        row.listQuery.pageNum = row.listQuery.pageNum + 1;
         row.itemBusy = false;
         row.itemListLoading = false;
         this.timerstamp = new Date().valueOf();
@@ -470,7 +474,7 @@ export default {
     },
     handleAddItemIncome(row) {
       //新增一条表记录，获取一个id
-      createId().then(response => {
+      createDetailId().then(response => {
         let id = response.data
         let newRow = {};
         Object.assign(newRow, defaultIncomeRow);
@@ -504,6 +508,29 @@ export default {
           }
         })
         this.comCount--;
+      });
+    },
+    handleDeleteItem(pscope,row) {
+      let id = row.id;
+      this.$confirm('是否要进行删除操作?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        console.log("删除")
+        doDeleteDetail(id).then(response => {
+          if (response != null && response.data) {
+            this.$message.success("删除成功");
+            pscope.row.child.splice(
+              pscope.row.child.find(order => {
+                let f = order.id === id;
+                if(f){
+                  this.calDriver(pscope.row)
+                }
+                return f;
+              }), 1);
+          }
+        })
       });
     }
   }

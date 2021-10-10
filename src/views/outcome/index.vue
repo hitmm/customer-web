@@ -200,7 +200,7 @@
   </div>
 </template>
 <script>
-import {doDelete, fetchCstList, fetchList,doDeleteCstIncome,upsertCstIncome} from "@/api/company";
+import {doDelete, fetchCstList, fetchList,doDeleteDriverItemIncome,upsertCstIncome} from "@/api/company";
 import {createId} from "@/api/primaryutils";
 import EditableCell from "@/components/Table/EditableCell.vue";
 import elTableInfiniteScroll from 'el-table-infinite-scroll';

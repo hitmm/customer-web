@@ -262,11 +262,6 @@ export default {
   created() {
   },
   methods: {
-    changeDate() {
-      this.drawerFirstLoad = true;
-      console.log("日期改变")
-      this.customerLoad();
-    },
     showDrawer(row) {
       this.drawer = true;
       this.customerReset()

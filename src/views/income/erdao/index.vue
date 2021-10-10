@@ -94,7 +94,7 @@
                         <el-button
                           size="mini"
                           type="danger"
-                          @click="handleDelete(scope.$index, scope.row)">删除
+                          @click="handleItemDelete(scope, itemScope.row)">删除
                         </el-button>
                       </p>
                     </template>
@@ -104,9 +104,14 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="编号" width="100" align="center">
-            <template slot-scope="scope">{{ scope.row.id }}</template>
+          <el-table-column
+            type="index"
+            label="序号"
+            width="50">
           </el-table-column>
+<!--          <el-table-column label="编号" width="100" align="center">-->
+<!--            <template slot-scope="scope">{{ scope.row.id }}</template>-->
+<!--          </el-table-column>-->
           <el-table-column label="二道名称" width="120" align="center">
             <editable-cell slot-scope="scope"
                            :can-edit="true"
@@ -189,11 +194,11 @@
   </div>
 </template>
 <script>
-import {doDelete,upsert, fetchCstList, fetchList, upsertCstIncome} from "@/api/erdaoIncome";
-import {createId} from "@/api/primaryutils";
+import {createManageId,createErdaoIncomeId,doDelete,doDeleteErdaoItemIncome,upsert, fetchCstList, fetchList, upsertCstIncome} from "@/api/erdaoIncome";
 import EditableCell from "@/components/Table/EditableCell.vue";
 import elTableInfiniteScroll from 'el-table-infinite-scroll';
 import img_home_today_amount from '@/assets/images/home_today_amount.png';
+// import {createErdaoIncomeId, createManageId} from "../../../api/erdaoIncome";
 
 const defaultErdaoListQuery = {
   name: null,
@@ -284,21 +289,6 @@ export default {
       row.cstBusy = false;
       row.cstCount = 0;
       row.child = [];
-    },
-    timerLoading() {
-      if (this.currComRow == null) {
-        return;
-      }
-      let comId = this.currComRow.id;
-      let params = {"id": comId, "pageNum": 1, "pageSize": 1}
-      getTodayMoney(params).then(response => {
-        let data = response.data.data;
-        if (data.length > 0) {
-          this.todayMoney = data[0].todayMoney;
-        } else {
-          this.todayMoney = null;
-        }
-      });
     },
     changeDate() {
       this.itemLoad();
@@ -455,7 +445,7 @@ export default {
     },
     handleAddManage() {
       //新增一条表记录，获取一个id
-      createId().then(response => {
+      createManageId().then(response => {
         let id = response.data
         let newRow = {};
         Object.assign(newRow, this.newComRow);
@@ -467,7 +457,7 @@ export default {
     },
     handleAddItemIncome(row) {
       //新增一条表记录，获取一个id
-      createId().then(response => {
+      createErdaoIncomeId().then(response => {
         let id = response.data
         let newRow = {};
         Object.assign(newRow, this.newIncomeRow);
@@ -499,6 +489,29 @@ export default {
           }
         })
         this.comCount--;
+      });
+    },
+    handleItemDelete(pscope,row){
+      let id = row.id;
+      this.$confirm('是否要进行删除操作?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        console.log("删除")
+        doDeleteErdaoItemIncome(id).then(response => {
+          if (response != null && response.data) {
+            this.$message.success("删除成功");
+            pscope.row.child.splice(
+              pscope.row.child.find(order => {
+                let f = order.id === id;
+                if(f){
+                  this.reQueryByManageId(pscope.$index,order.manageId)
+                }
+                return f;
+              }), 1);
+          }
+        })
       });
     }
   }
