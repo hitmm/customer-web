@@ -52,121 +52,73 @@
                   v-loading="comListLoading"
                   border>
 
+          <el-table-column type="expand">
+            <template slot-scope="scope">
+              <el-container>
+                <el-table ref="cstTable"
+                          :key="timerstamp"
+                          :data="scope.row.child"
+                          :row-style="{height: '0'}"
+                          :cell-style="{padding: '0'}"
+                          style="width: 100%;padding: 0;margin: 0"
+                          v-el-table-infinite-scroll="customerLoad(scope.row)"
+                          :infinite-scroll-disabled="scope.row.cstBusy"
+                          v-loading="scope.row.cstListLoading"
+                          :row-class-name="cstRowClassName"
+                          border>
+                  <el-table-column label="详情-客户名称" style="width: 50%" align="center">
+                    <editable-cell slot-scope="{row}"
+                                   :can-edit="true"
+                                   v-on:blur="handleCstInputChange(scope.$index,scope.row,row)"
+                                   v-model="row.name">
+                      <span slot="content">{{ row.name }}</span>
+                    </editable-cell>
+                  </el-table-column>
+                  <el-table-column label="详情-收入(人民币)" style="width: 30%" align="center">
+                    <editable-cell slot-scope="{row}"
+                                   :can-edit="true"
+                                   v-on:change="handleCstInputChange(scope.$index,scope.row,row)"
+                                   v-model="row.money">
+                      <span slot="content">{{ row.money }}</span>
+                    </editable-cell>
+                  </el-table-column>
+                  <el-table-column label="详情-操作" style="width: 20%" align="center" v-if="canEditIncome()" key='1'>
+                    <template slot-scope="itemScope">
+                      <p>
+                        <el-button
+                          size="mini"
+                          type="primary"
+                          v-if="showCstAdd(scope,itemScope)"
+                          @click="handleAddCstIncome(scope.row)">新增
+                        </el-button>
+                        <el-button
+                          size="mini"
+                          type="danger"
+                          @click="handleIncomeDelete(scope,itemScope.row)">删除
+                        </el-button>
+                      </p>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </el-container>
+            </template>
+          </el-table-column>
+
           <el-table-column
             type="index"
             label="序号"
             width="50">
           </el-table-column>
-          <el-table-column label="公司名称" width="120" align="center" type="expand">
-            <template slot-scope="pscope">
-              <editable-cell slot-scope="scope"
-                             :can-edit="true"
-                             v-on:blur="handleInputChange(scope.$index,scope.row)"
-                             v-model="scope.row.name">
-                <span slot="content">{{ scope.row.name }}</span>
-              </editable-cell>
-              <el-table ref="cstTable"
-                        :key="timerstamp"
-                        :data="pscope.row.child"
-                        :row-style="{height: '0'}"
-                        :cell-style="{padding: '0'}"
-                        style="width: 100%;padding: 0;margin: 0"
-                        v-el-table-infinite-scroll="customerLoad(pscope.row)"
-                        :infinite-scroll-disabled="pscope.row.cstBusy"
-                        v-loading="pscope.row.cstListLoading"
-                        :row-class-name="cstRowClassName"
-                        border>
-                <el-table-column label="详情-客户名称" style="width: 50%" align="center">
-                  <editable-cell slot-scope="{row}"
-                                 :can-edit="true"
-                                 v-on:blur="handleCstInputChange(pscope.$index,pscope.row,row)"
-                                 v-model="row.name">
-                    <span slot="content">{{ row.name }}</span>
-                  </editable-cell>
-                </el-table-column>
-                <el-table-column label="详情-收入(人民币)" style="width: 30%" align="center">
-                  <editable-cell slot-scope="{row}"
-                                 :can-edit="true"
-                                 v-on:change="handleCstInputChange(pscope.$index,pscope.row,row)"
-                                 v-model="row.money">
-                    <span slot="content">{{ row.money }}</span>
-                  </editable-cell>
-                </el-table-column>
-                <el-table-column label="详情-操作" style="width: 20%" align="center" v-if="canEditIncome()" key='1'>
-                  <template slot-scope="itemScope">
-                    <p>
-                      <el-button
-                        size="mini"
-                        type="primary"
-                        v-if="showCstAdd(pscope,itemScope)"
-                        @click="handleAddCstIncome(pscope.row)">新增
-                      </el-button>
-                      <el-button
-                        size="mini"
-                        type="danger"
-                        @click="handleIncomeDelete(pscope,itemScope.row)">删除
-                      </el-button>
-                    </p>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </template>
-          </el-table-column>
-          <el-table-column label="公司名称" width="120" align="center" type="expand">
-            <template slot-scope="pscope">
-
-              <editable-cell slot-scope="scope"
-                             :can-edit="true"
-                             v-on:blur="handleInputChange(scope.$index,scope.row)"
-                             v-model="scope.row.name">
-                <span slot="content">{{ scope.row.name }}</span>
-              </editable-cell>
-              <el-table ref="cstTable"
-                        :key="timerstamp"
-                        :data="pscope.row.child"
-                        :row-style="{height: '0'}"
-                        :cell-style="{padding: '0'}"
-                        style="width: 100%;padding: 0;margin: 0"
-                        v-el-table-infinite-scroll="customerLoad(pscope.row)"
-                        :infinite-scroll-disabled="pscope.row.cstBusy"
-                        v-loading="pscope.row.cstListLoading"
-                        :row-class-name="cstRowClassName"
-                        border>
-                <el-table-column label="详情-客户名称" style="width: 50%" align="center">
-                  <editable-cell slot-scope="{row}"
-                                 :can-edit="true"
-                                 v-on:blur="handleCstInputChange(pscope.$index,pscope.row,row)"
-                                 v-model="row.name">
-                    <span slot="content">{{ row.name }}</span>
-                  </editable-cell>
-                </el-table-column>
-                <el-table-column label="详情-收入(人民币)" style="width: 30%" align="center">
-                  <editable-cell slot-scope="{row}"
-                                 :can-edit="true"
-                                 v-on:change="handleCstInputChange(pscope.$index,pscope.row,row)"
-                                 v-model="row.money">
-                    <span slot="content">{{ row.money }}</span>
-                  </editable-cell>
-                </el-table-column>
-                <el-table-column label="详情-操作" style="width: 20%" align="center" v-if="canEditIncome()" key='1'>
-                  <template slot-scope="itemScope">
-                    <p>
-                      <el-button
-                        size="mini"
-                        type="primary"
-                        v-if="showCstAdd(pscope,itemScope)"
-                        @click="handleAddCstIncome(pscope.row)">新增
-                      </el-button>
-                      <el-button
-                        size="mini"
-                        type="danger"
-                        @click="handleIncomeDelete(pscope,itemScope.row)">删除
-                      </el-button>
-                    </p>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </template>
+<!--          <el-table-column label="编号" width="100" align="center">-->
+<!--            <template slot-scope="scope">{{ scope.row.id }}</template>-->
+<!--          </el-table-column>-->
+          <el-table-column label="公司名称" width="120" align="center">
+            <editable-cell slot-scope="scope"
+                           :can-edit="true"
+                           v-on:blur="handleInputChange(scope.$index,scope.row)"
+                           v-model="scope.row.name">
+              <span slot="content">{{ scope.row.name }}</span>
+            </editable-cell>
           </el-table-column>
           <el-table-column label="点数" align="center">
             <editable-cell slot-scope="scope"
