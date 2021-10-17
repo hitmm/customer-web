@@ -21,7 +21,7 @@ export function fetchList(params) {
 
 export function fetchDetailList(params) {
   return request({
-    url:'/carryDetail/list',
+    url:'/driverInfo/listDetail',
     method:'get',
     params:params
   })

@@ -36,21 +36,43 @@ export const constantRouterMap = [
 
 export const asyncRouterMap = [
   {
+    path: '/manage',
+    component: Layout,
+    redirect: '/manage/company/page',
+    name: 'manage',
+    meta: {title: '元信息管理', icon: 'product'},
+    children: [{
+      path: 'company',
+      name: 'company',
+      component: () => import('@/views/manage/company/index'),
+      meta: {title: '公司管理', icon: 'product-list'}
+    },{
+      path: 'erdao',
+      name: 'erdao',
+      component: () => import('@/views/manage/erdao/index'),
+      meta: {title: '二道管理', icon: 'product-comment'}
+    },{
+      path: 'driver',
+      name: 'driver',
+      component: () => import('@/views/manage/driver/index'),
+      meta: {title: '司机管理', icon: 'product-comment'}
+    }]
+  },{
     path: '/income',
     component: Layout,
     redirect: '/income/page',
     name: 'income',
-    meta: {title: '收入管理', icon: 'product'},
+    meta: {title: '收入录入管理', icon: 'product'},
     children: [{
       path: 'company',
       name: 'company',
       component: () => import('@/views/income/company/index'),
-      meta: {title: '客户公司管理', icon: 'product-list'}
+      meta: {title: '客户录入', icon: 'product-list'}
     },{
       path: 'erdao',
       name: 'erdao',
       component: () => import('@/views/income/erdao/index'),
-      meta: {title: '二道收入管理', icon: 'product-comment'}
+      meta: {title: '二道录入', icon: 'product-comment'}
     }]
   },
   {
@@ -58,12 +80,12 @@ export const asyncRouterMap = [
     component: Layout,
     redirect: '/outcome/page',
     name: 'outcome',
-    meta: {title: '支出管理', icon: 'sms-coupon'},
+    meta: {title: '支出录入管理', icon: 'sms-coupon'},
     children: [{
-      path: 'erdao',
-      name: 'erdaoOutcome',
-      component: () => import('@/views/outcome/erdao/index'),
-      meta: {title: '二道支出列表', icon: 'product-comment'}
+      path: 'driver',
+      name: 'driverOutcome',
+      component: () => import('@/views/outcome/driver/index'),
+      meta: {title: '司机支出列表', icon: 'product-comment'}
     },{
       path: 'provider',
       name: 'provider',

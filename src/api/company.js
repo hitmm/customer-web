@@ -19,6 +19,14 @@ export function fetchList(params) {
   })
 }
 
+export function fetchDetailList(params) {
+  return request({
+    url:'/company/listDetail',
+    method:'get',
+    params:params
+  })
+}
+
 export function fetchCstList(params) {
   return request({
     url:'/customer/list',

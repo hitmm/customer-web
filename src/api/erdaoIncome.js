@@ -18,6 +18,13 @@ export function fetchList(params) {
     params:params
   })
 }
+export function fetchDetailList(params) {
+  return request({
+    url:'/erdaoManage/listDetail',
+    method:'get',
+    params:params
+  })
+}
 
 export function fetchCstList(params) {
   return request({

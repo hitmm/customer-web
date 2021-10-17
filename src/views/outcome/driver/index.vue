@@ -25,19 +25,29 @@
           <a-table
             :columns="columns"
             :data-source="bodyData[index][i]"
-            style="height: 100%"
+            style="width:300px;height: 100%"
             :scroll="{x : 200,y: 200}"
             bordered
             size="small"
             :rowKey='record=>record.id'
             :pagination="false">
-            <a-tooltip slot="name" slot-scope="item" :title="col.name" trigger="hover">
+            <a-popover slot="name" slot-scope="item" :title="col.name" trigger="hover">
               <span style="font-family: Arial,serif;height: fit-content">{{ col.name }}</span>
+              <template slot="content">
+                <a style="font-family: Arial,serif;height: fit-content">保底价：￥{{ col.baseMoney }}</a><br/>
+                <a style="font-family: Arial,serif;height: fit-content">点数：{{ col.profitPoint }}</a><br/>
+                <a style="font-family: Arial,serif;height: fit-content">未满百：￥{{ col.overflowMoney }}</a><br/>
+                <a style="font-family: Arial,serif;height: fit-content">总支付：￥{{ col.realMoney }}</a>
+              </template>
+            </a-popover>
+            <a-tooltip slot="baseMoney" slot-scope="item" title="表头为保底价，列数据为未满百补贴数据" trigger="hover">
+              <span style="font-family: Arial,serif;height: fit-content">保底价:￥{{ col.baseMoney }}</span>
             </a-tooltip>
-            <span slot="money" slot-scope="item" style="font-family: Arial,serif">
+            <a-tooltip slot="money" slot-scope="item" title="表头为总数，列数据为实际金额" trigger="hover">
+            <span style="font-family: Arial,serif">
               <a-row>
                 <a-col :span="22">
-                  {{ col.totalAmount }}
+                  总数:￥{{ col.totalAmount }}
                 </a-col>
                 <a-col :span="2">
                   <a-button
@@ -49,12 +59,14 @@
                 </a-col>
               </a-row>
             </span>
-            <template slot="nameCell" slot-scope="text, record, colIndex" style="background-color: #8492a6">
-              <editable-cell :text="text" @change="onCellChange(record, index,i,colIndex, $event,'name')"/>
+            </a-tooltip>
+            <template slot="carryAmountCell" slot-scope="text, record, colIndex">
+              <editable-cell :text="text" @change="onCellChange(record, index,i,colIndex, $event,'carryAmount')"/>
             </template>
-            <template slot="moneyCell" slot-scope="text, record,colIndex" style="background-color: #8492a6">
-              <editable-cell :text="text" @change="onCellChange(record, index,i,colIndex, $event,'money')"/>
+            <template slot="accidentMoneyCell" slot-scope="text, record, colIndex">
+              <editable-cell :text="text" @change="onCellChange(record, index,i,colIndex, $event,'accidentMoney')"/>
             </template>
+            <span  slot="realMoneyCell" slot-scope="text, record, colIndex">{{ text }}</span>
           </a-table>
         </div>
         <a-table
@@ -72,7 +84,7 @@
   <!--  </div>-->
 </template>
 <script>
-import {createManageId,createErdaoIncomeId,fetchDetailList,doDeleteErdaoItemIncome,upsert, fetchCstList, fetchList, upsertCstIncome} from "@/api/erdaoIncome";
+import {createId,createDetailId,doDelete,upsertCarryDetail,upsert, fetchDetailList} from "@/api/driver";
 
 const EditableCell = {
   template: `
@@ -120,17 +132,23 @@ const EditableCell = {
 
 const columns = [
   {
-    dataIndex: 'name',
-    key: 'name',
-    slots: {title: 'customTitle'},
-    scopedSlots: {title: 'name', customRender: 'nameCell'},
+    dataIndex: 'carryAmount',
+    key: 'carryAmount',
+    slots: {title: 'customCarryAmount'},
+    scopedSlots: {title: 'name', customRender: 'carryAmountCell'},
     ellipsis: true,
   },
   {
-    dataIndex: 'money',
-    key: 'money',
-    slots: {title: 'customMoney'},
-    scopedSlots: {title: 'money', customRender: 'moneyCell'},
+    dataIndex: 'accidentMoney',
+    key: 'accidentMoney',
+    slots: {title: 'accidentMoney'},
+    scopedSlots: {title: 'baseMoney', customRender: 'accidentMoneyCell'},
+  },
+  {
+    dataIndex: 'realMoney',
+    key: 'realMoney',
+    slots: {title: 'realMoney'},
+    scopedSlots: {title: 'money', customRender: 'realMoneyCell'},
   }
 ];
 
@@ -198,15 +216,15 @@ export default {
       console.log(record, listRowIndex,tableIndex,colIndex,text,dataIndex)
       let header = this.headerData[listRowIndex][tableIndex];
       let body = Object.assign({},record);
-      body.manageId = header.id;
-      if(dataIndex === 'name'){
-        body.name = text;
-      }else if(dataIndex === 'money'){
-        body.money = text;
+      body.driverId = header.id;
+      if(dataIndex === 'carryAmount'){
+        body.carryAmount = text;
+      }else if(dataIndex === 'accidentMoney'){
+        body.accidentMoney = text;
       }
       console.log(header)
       console.log(body)
-      upsertCstIncome(body).then(response=>{
+      upsertCarryDetail(body).then(response=>{
         if (response.data > 0) {
           this.querySingleByComId(header.id,listRowIndex,tableIndex);
           this.$message.success('更新成功');
@@ -240,7 +258,7 @@ export default {
       if (this.bodyData[listRowIndex][tableIndex] == null) {
         this.bodyData[listRowIndex][tableIndex] = []
       }
-      createErdaoIncomeId().then(response=>{
+      createDetailId().then(response=>{
         let id = response.data
         console.log(id)
         let newRow = {
