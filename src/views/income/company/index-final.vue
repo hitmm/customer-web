@@ -29,34 +29,34 @@
         <a-list
           :data-source="headerData"
           :split="false">
-          <div
-            v-if="loadMore"
-            slot="loadMore"
-            :style="{ textAlign: 'center', marginTop: '12px', height: '32px', lineHeight: '32px' }">
-            <a-spin v-if="loadingMore"/>
-            <a-button v-else @click="onLoadMore">
-              加载更多
-            </a-button>
-          </div>
-          <a-list-item
-            slot="renderItem"
-            slot-scope="item, index"
-            :split="false"
-            style="padding: 0;margin: 0;align-items: flex-start;">
-            <div v-model="item" v-for="(col,i) in item" style="align-items: flex-start;">
-              <a-table
-                :columns="columns"
-                :data-source="bodyData[index][i]"
-                style="height: 100%"
-                :scroll="{x : 200,y: 200}"
-                bordered
-                size="small"
-                :rowKey='record=>record.id'
-                :pagination="false">
-                <a-tooltip slot="name" slot-scope="item" :title="col.name" trigger="hover">
-                  <span style="font-family: Arial,serif;height: fit-content">{{ col.name }}</span>
-                </a-tooltip>
-                <span slot="money" slot-scope="item" style="font-family: Arial,serif">
+            <div
+              v-if="loadMore"
+              slot="loadMore"
+              :style="{ textAlign: 'center', marginTop: '12px', height: '32px', lineHeight: '32px' }">
+              <a-spin v-if="loadingMore"/>
+              <a-button v-else @click="onLoadMore">
+                加载更多
+              </a-button>
+            </div>
+            <a-list-item
+              slot="renderItem"
+              slot-scope="item, index"
+              :split="false"
+              style="padding: 0;margin: 0;align-items: flex-start;">
+              <div v-model="item" v-for="(col,i) in item" style="align-items: flex-start;">
+                <a-table
+                  :columns="columns"
+                  :data-source="bodyData[index][i]"
+                  style="height: 100%"
+                  :scroll="{x : 200,y: 200}"
+                  bordered
+                  size="small"
+                  :rowKey='record=>record.id'
+                  :pagination="false">
+                  <a-tooltip slot="name" slot-scope="item" :title="col.name" trigger="hover">
+                    <span style="font-family: Arial,serif;height: fit-content">{{ col.name }}</span>
+                  </a-tooltip>
+                  <span slot="money" slot-scope="item" style="font-family: Arial,serif">
               <a-row>
                 <a-col :span="22">
                   {{ col.totalAmount }}
@@ -71,24 +71,24 @@
                 </a-col>
               </a-row>
             </span>
-                <template slot="nameCell" slot-scope="text, record, colIndex" style="background-color: #8492a6">
-                  <editable-cell :text="text" @change="onCellChange(record, index,i,colIndex, $event,'name')"/>
-                </template>
-                <template slot="moneyCell" slot-scope="text, record,colIndex" style="background-color: #8492a6">
-                  <editable-cell :text="text" @change="onCellChange(record, index,i,colIndex, $event,'money')"/>
-                </template>
-              </a-table>
-            </div>
-            <a-table
-              :columns="actionColumns"
-              size="small"
-              style="width: 100%;height: 50%"
-              :pagination="false">
+                  <template slot="nameCell" slot-scope="text, record, colIndex" style="background-color: #8492a6">
+                    <editable-cell :text="text" @change="onCellChange(record, index,i,colIndex, $event,'name')"/>
+                  </template>
+                  <template slot="moneyCell" slot-scope="text, record,colIndex" style="background-color: #8492a6">
+                    <editable-cell :text="text" @change="onCellChange(record, index,i,colIndex, $event,'money')"/>
+                  </template>
+                </a-table>
+              </div>
+              <a-table
+                :columns="actionColumns"
+                size="small"
+                style="width: 100%;height: 50%"
+                :pagination="false">
           <span slot="action" slot-scope="text, record">
               <a>Invite 一 {{ record.$index }}</a>
           </span>
-            </a-table>
-          </a-list-item>
+              </a-table>
+            </a-list-item>
           <div v-if="loading && !busy" class="demo-loading-container">
             <a-spin />
           </div>
@@ -342,8 +342,9 @@ export default {
 .demo-infinite-container {
   border: 1px solid #e8e8e8;
   border-radius: 4px;
+  overflow: auto;
   padding: 8px 24px;
-  height: 800px;
+  height: 100%;
 }
 .demo-loading-container {
   position: absolute;
